@@ -74,7 +74,6 @@
 			isa = PBXGroup;
 			children = (
 				46006F9117F3CFC100D5BE43 /* main.m */,
-				46006F9517F3CFC100D5BE43 /* GaussianElimination.1 */,
 				46006F9317F3CFC100D5BE43 /* Supporting Files */,
 			);
 			path = GaussianElimination;
@@ -83,6 +82,7 @@
 		46006F9317F3CFC100D5BE43 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				46006F9517F3CFC100D5BE43 /* GaussianElimination.1 */,
 				46006F9417F3CFC100D5BE43 /* GaussianElimination-Prefix.pch */,
 			);
 			name = "Supporting Files";
@@ -251,6 +251,7 @@
 				46006F9B17F3CFC100D5BE43 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
