@@ -24,8 +24,18 @@ int main(int argc, const char * argv[]) // BEGIN PROGRAM
     // Creates new instance of LinearSystem object and initializes it with contents of the file.
     LinearSystem *MyLinearSystem = [[LinearSystem alloc] initWithContentsOfString:dataFileContent];
     
-    // Prints the contents of the LinearSystem.
-    [MyLinearSystem PrintLinearSystem];
+    // Prints the BEFORE contents of the LinearSystem for debugging purposes.
+    // [MyLinearSystem PrintLinearSystem];
+    
+    // Solve linear system by Gaussian elimination using scaled partial pivoting.
+    [MyLinearSystem SolveLinearSystem];
+    
+    
+    
+    
+    
+    // Prints the AFTER contents of the LinearSystem for debugging purposes.
+    // [MyLinearSystem PrintLinearSystem];
     
     } // END MEMORY MANAGEMENT BLOCK.
     

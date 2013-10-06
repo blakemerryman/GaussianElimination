@@ -73,6 +73,17 @@
     return self;
 }
 
+#pragma mark - Utility Methods
+
+/*
+ METHOD: SolveLinearSystem
+ This method solves the linear system of equations using the method of Gaussian Elimination with scaled partial pivoting. 
+ */
+-(void)SolveLinearSystem
+{
+    
+}
+
 #pragma mark - Output Methods
 
 /*
