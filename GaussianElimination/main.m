@@ -30,10 +30,6 @@ int main(int argc, const char * argv[]) // BEGIN PROGRAM
     // Solve linear system by Gaussian elimination using scaled partial pivoting.
     [MyLinearSystem SolveLinearSystem];
     
-    
-    
-    
-    
     // Prints the AFTER contents of the LinearSystem for debugging purposes.
     // [MyLinearSystem PrintLinearSystem];
     

@@ -73,7 +73,7 @@
     return self;
 }
 
-#pragma mark - Utility Methods
+#pragma mark - Other Methods
 
 /*
  METHOD: SolveLinearSystem
@@ -94,8 +94,6 @@
         
     }
 }
-
-#pragma mark - Output Methods
 
 /*
  METHOD: PrintLinearSystem

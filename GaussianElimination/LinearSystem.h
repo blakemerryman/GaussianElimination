@@ -16,18 +16,13 @@
 @property(nonatomic)NSMutableArray* matrixB;
 //@property(nonatomic)NSMutableArray* matrixX;
 
-// Methods:
+// Public Methods:
 #pragma mark - Object Initializers
 -(id)init;
 -(id)initWithContentsOfString:(NSString *) fileContents;
 
-#pragma mark - Utility Methods
--(void)SolveLinearSystem;
-
 #pragma mark - Output Methods
+-(void)SolveLinearSystem;
 -(void)PrintLinearSystem;
-
-#pragma mark - Private Method Implementations
--(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings;
 
 @end
