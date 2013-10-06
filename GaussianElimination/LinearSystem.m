@@ -40,7 +40,11 @@
 {
     self = [super init];
     
-    if (self) {
+    if (self)
+    {
+        // Allocates memory & initializes the matrices A & B.
+        _matrixA = [[NSMutableArray alloc] init];
+        _matrixB = [[NSMutableArray alloc] init];
         
         // Initializes the n-value for the linear system from the first line of the string.
         _n = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue];
