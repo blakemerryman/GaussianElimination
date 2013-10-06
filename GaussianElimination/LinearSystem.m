@@ -11,8 +11,8 @@
 #pragma mark - Private Methods Interface
 @interface LinearSystem (PrivateMethods)
 -(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings;
-
-
+-(int)FindPivotElementForStep:(int)step;
+-(void)ReduceRowForStep:(int)step;
 @end
 
 #pragma mark - Public Methods Implementation
@@ -77,11 +77,22 @@
 
 /*
  METHOD: SolveLinearSystem
- This method solves the linear system of equations using the method of Gaussian Elimination with scaled partial pivoting. 
+ This method solves the linear system of equations using the method of Gaussian Elimination with scaled partial pivoting.
  */
 -(void)SolveLinearSystem
 {
-    
+    for (int step = 0; step < _n-1; step++)
+    {
+        // Pivoting.
+        int newPivotLocation = [self FindPivotElementForStep:step];
+        [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];
+        
+        // Row reduction.
+        [self ReduceRowForStep:step];
+        
+        // Back substitution.
+        
+    }
 }
 
 #pragma mark - Output Methods
@@ -144,6 +155,58 @@
     //NSLog(@"Array Element Count: %lu", (unsigned long)[arrayOfDoubles count]);
     
     return arrayOfDoubles;
+}
+
+/*
+ METHOD: FindPivotForStep
+ This private method returns the location of the largest absolute value element in the column at or below the current pivot element.
+ */
+-(int)FindPivotElementForStep:(int)step
+{
+    // Creates pivot location & inits with step count.
+    int pivotLocation = step;
+    
+    // Creates largest value & inits with current value at step.
+    double largestPivotValue = fabs( [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue] );
+    
+    for (int row = step+1; row < _n; row++)
+    {
+        // Finds the absolute value of the next element in the column below the pivot element.
+        double tempAbsVal = fabs( [[[_matrixA objectAtIndex:row] objectAtIndex:step] doubleValue] );
+        
+        // Compares the next element & the current largest element.
+        if (tempAbsVal > largestPivotValue)
+        {
+            largestPivotValue = tempAbsVal;     // Assigns new largest absolute value.
+            pivotLocation = row;                // Assigns new largest abs.val. location.
+        }
+    }
+    
+    return pivotLocation;
+}
+
+/*
+ METHOD: ReduceRowForStep
+ This method performs the row reduction for each step.
+ */
+-(void)ReduceRowForStep:(int)step
+{
+    for (int row = step+1; row < _n; row ++)
+    {
+        // Calculates the multiplier value.
+        double multiplier = [[[_matrixA objectAtIndex:row] objectAtIndex:step] doubleValue] /
+        [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue];
+        
+        for (int col = step; col < _n; col++)
+        {
+            // Calculates new row-reduced value for current element.
+            double newValue = [[[_matrixA objectAtIndex:row] objectAtIndex:col] doubleValue]
+            - multiplier * [[[_matrixA objectAtIndex:step] objectAtIndex:col] doubleValue];
+            
+            // Replaces the current element with the new value.
+            [[_matrixA objectAtIndex:row] replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:newValue]];
+        }
+    }
 }
 
 @end
