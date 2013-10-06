@@ -10,6 +10,7 @@
 		46006F8F17F3CFC100D5BE43 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46006F8E17F3CFC100D5BE43 /* Foundation.framework */; };
 		46006F9217F3CFC100D5BE43 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 46006F9117F3CFC100D5BE43 /* main.m */; };
 		46006F9617F3CFC100D5BE43 /* GaussianElimination.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 46006F9517F3CFC100D5BE43 /* GaussianElimination.1 */; };
+		4622405B17FFA2190090E80E /* LinearSystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 4622405A17FFA2190090E80E /* LinearSystem.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +32,8 @@
 		46006F9117F3CFC100D5BE43 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		46006F9417F3CFC100D5BE43 /* GaussianElimination-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GaussianElimination-Prefix.pch"; sourceTree = "<group>"; };
 		46006F9517F3CFC100D5BE43 /* GaussianElimination.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = GaussianElimination.1; sourceTree = "<group>"; };
+		4622405917FFA2190090E80E /* LinearSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinearSystem.h; sourceTree = "<group>"; };
+		4622405A17FFA2190090E80E /* LinearSystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LinearSystem.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +77,8 @@
 			isa = PBXGroup;
 			children = (
 				46006F9117F3CFC100D5BE43 /* main.m */,
+				4622405917FFA2190090E80E /* LinearSystem.h */,
+				4622405A17FFA2190090E80E /* LinearSystem.m */,
 				46006F9317F3CFC100D5BE43 /* Supporting Files */,
 			);
 			path = GaussianElimination;
@@ -140,6 +145,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				46006F9217F3CFC100D5BE43 /* main.m in Sources */,
+				4622405B17FFA2190090E80E /* LinearSystem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

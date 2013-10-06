@@ -7,38 +7,27 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "LinearSystem.h"
 
-//void testFunction(void)
-//{
-//    // insert code here...
-//    NSLog(@"\nStart Program!\n");
-//    
-//    int matrix[3][3] = { {1,2,3}, {4,5,6}, {7,8,9} };
-//    
-//    for (int i = 0; i < 3; i++)
-//    {
-//        printf("| ");
-//        for (int j = 0; j < 3; j++)
-//        {
-//            printf("%i  ", matrix[i][j]);
-//        }
-//        printf("|");
-//        printf("\n");
-//    }
-//}
+// FUNCTION PROTOTYPES
 
-int main(int argc, const char * argv[])
-{
-    @autoreleasepool
-    { // BEGIN MEMORY MANAGEMENT BLOCK.
-        
-        //testFunction();
-        
-        
+// MAIN FUNCTION
+int main(int argc, const char * argv[]) // BEGIN PROGRAM
+{   @autoreleasepool { // BEGIN MEMORY MANAGEMENT BLOCK.
     
+    // Establishes the path to file & stores contents in a string.
+    NSURL *dataFileURL = [NSURL fileURLWithPath:@"/Users/blakemerryman/Desktop/data.txt"];
+    NSString *dataFileContent = [NSString stringWithContentsOfURL:dataFileURL
+                                                         encoding:NSUTF8StringEncoding
+                                                            error:nil];
     
+    // Creates new instance of LinearSystem object and initializes it with contents of the file.
+    LinearSystem *MyLinearSystem = [[LinearSystem alloc] initWithContentsOfString:dataFileContent];
     
+    // Prints the contents of the LinearSystem.
+    [MyLinearSystem PrintLinearSystem];
     
     } // END MEMORY MANAGEMENT BLOCK.
-    return 0;
+    
+    return 0; // END PROGRAM
 }
