@@ -16,7 +16,7 @@ int main(int argc, const char * argv[]) // BEGIN PROGRAM
 {   @autoreleasepool { // BEGIN MEMORY MANAGEMENT BLOCK.
     
     // Establishes the path to file & stores contents in a string.
-    NSURL *dataFileURL = [NSURL fileURLWithPath:@"/Users/blakemerryman/Desktop/data.txt"];
+    NSURL *dataFileURL = [NSURL fileURLWithPath:@"/Users/blakemerryman/Desktop/data2.txt"];
     NSString *dataFileContent = [NSString stringWithContentsOfURL:dataFileURL
                                                          encoding:NSUTF8StringEncoding
                                                             error:nil];
@@ -32,6 +32,9 @@ int main(int argc, const char * argv[]) // BEGIN PROGRAM
     
     // Prints the AFTER contents of the LinearSystem for debugging purposes.
     [MyLinearSystem PrintLinearSystem];
+    
+    // Saves the solution to file.
+    [MyLinearSystem SaveSolutionToFile];
     
     } // END MEMORY MANAGEMENT BLOCK.
     

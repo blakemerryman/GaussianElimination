@@ -10,15 +10,15 @@
 
 #pragma mark - Private Methods Interface
 @interface LinearSystem (PrivateMethods)
--(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings;
+//-(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings;
 -(void)ScaleLinearSystem;
 -(int)FindPivotElementForStep:(int)step;
 -(void)ReduceRowForStep:(int)step;
 -(void)BackSubstitution;
+-(double)RoundDoubleValue:(double)doubleValue ToThisManyDecimalPlaces:(int)decimalPlaces;
 @end
 
 #pragma mark - Public Method Implementations
-
 @implementation LinearSystem
 
 #pragma mark - Object Initializers
@@ -60,7 +60,7 @@
             rowOfValues = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:i] componentsSeparatedByString:@" "];
             
             // Converts that row of string values to doubles.
-            rowOfValues = [self ConvertArrayOfStringsToArrayOfDoubles:rowOfValues];
+            //rowOfValues = [self ConvertArrayOfStringsToArrayOfDoubles:rowOfValues];
             
             // Adds row of doubles to the MatrixA.
             [_matrixA addObject:[rowOfValues mutableCopy]];
@@ -70,7 +70,7 @@
         // Initializes the Matrix B for the linear system from the n+1st row of the string.
         _matrixB = [[[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:_n+1] componentsSeparatedByString:@" "] mutableCopy];
         // Converts the matrix elements from strings to doubles.
-        _matrixB = [self ConvertArrayOfStringsToArrayOfDoubles:_matrixB];
+        //_matrixB = [self ConvertArrayOfStringsToArrayOfDoubles:_matrixB];
     
     }
     return self;
@@ -95,10 +95,10 @@
         
         // Row reduction.
         [self ReduceRowForStep:step];
-        
-        // Back substitution.
-        [self BackSubstitution];
     }
+    
+    // Back substitution.
+    [self BackSubstitution];
 }
 
 /*
@@ -117,7 +117,7 @@
     {
         for (int col = 0; col < _n; col++)
         {
-            printf(" %.3f", [[[_matrixA objectAtIndex:row] objectAtIndex:col] doubleValue] );
+            printf(" %.4f", [[[_matrixA objectAtIndex:row] objectAtIndex:col] doubleValue] );
         }
         printf("\n");
     }
@@ -126,7 +126,7 @@
     printf("\nMatrix B:\n");
     for (int row = 0; row < _n; row++)
     {
-        printf(" %.3f\n", [[_matrixB objectAtIndex:row] doubleValue]);
+        printf(" %.4f\n", [[_matrixB objectAtIndex:row] doubleValue]);
     }
     
     // Checks to make sure the Matrix X has objects inside before printing results.
@@ -135,7 +135,7 @@
         printf("\nMatrix X:\n");
         for (int row = 0; row < _n; row++)
         {
-            printf(" %.3f\n", [[_matrixX objectAtIndex:row] doubleValue]);
+            printf(" %.4f\n", [[_matrixX objectAtIndex:row] doubleValue]);
         }
         
         printf("\n");
@@ -144,45 +144,42 @@
 
 /*
  METHOD SaveSolutionToFile
- This method saves the solution stored in Matrix X to a file.
+ This method saves the solution stored in Matrix X to a plain txt file.
  */
 -(void)SaveSolutionToFile
 {
-    
-    
-    
-    
-    
+#warning Need to format the output better.
+    [_matrixX writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
 }
 
 #pragma mark - Private Method Implementations
 
-/*
- METHOD: ConvertArrayOfStringsToArrayOfDoubles
- This private method takes an array of string values (obtained from the input data file), converts them to double precision float values,
- stores them in a new array, and returns that new array of doubles.
- */
--(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings
-{
-    NSMutableArray* arrayOfDoubles = [[NSMutableArray alloc] initWithCapacity:0];
-    
-    // Gets the number of elements in arrayOfStrings
-    NSUInteger elementCount = [arrayOfStrings count];
-    
-    for (int element = 0; element < elementCount; element++)
-    {
-        // Converts element of type string to type double.
-        double elementValue = [[arrayOfStrings objectAtIndex:element] doubleValue];
-        //NSLog(@" %.2f ", elementValue);
-        
-        // Adds element value to array.
-        [arrayOfDoubles addObject: [NSNumber numberWithDouble:elementValue] ];
-    }
-    
-    //NSLog(@"Array Element Count: %lu", (unsigned long)[arrayOfDoubles count]);
-    
-    return arrayOfDoubles;
-}
+///*
+// METHOD: ConvertArrayOfStringsToArrayOfDoubles
+// This private method takes an array of string values (obtained from the input data file), converts them to double precision float values,
+// stores them in a new array, and returns that new array of doubles.
+// */
+//-(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings
+//{
+//    NSMutableArray* arrayOfDoubles = [[NSMutableArray alloc] initWithCapacity:0];
+//    
+//    // Gets the number of elements in arrayOfStrings
+//    NSUInteger elementCount = [arrayOfStrings count];
+//    
+//    for (int element = 0; element < elementCount; element++)
+//    {
+//        // Converts element of type string to type double.
+//        double elementValue = [[arrayOfStrings objectAtIndex:element] doubleValue];
+//        //NSLog(@" %.2f ", elementValue);
+//        
+//        // Adds element value to array.
+//        [arrayOfDoubles addObject: [NSNumber numberWithDouble:elementValue] ];
+//    }
+//    
+//    //NSLog(@"Array Element Count: %lu", (unsigned long)[arrayOfDoubles count]);
+//    
+//    return arrayOfDoubles;
+//}
 
 /*
  METHOD: ScaleLinearSystem
@@ -210,8 +207,8 @@
     }
     
     // Error code prints if matrix only contains 0.0 as max value.
-    #warning Need to come up with standard minimum value to constitue "ZERO" ( 10^-7 ????)
-    if (maxAbsoluteValue == 0.0) { printf("ERROR: MATRIX A CONTAINS ONLY ZEROS!"); }
+#warning Need to come up with standard minimum value to constitue "ZERO" ( 10^-7 ????)
+    // if (maxAbsoluteValue == 0.0) { printf("ERROR: MATRIX A CONTAINS ONLY ZEROS!"); }
     
     // Calculates the matrix scaling factor.
     double scalingFactor = fabs(1/maxAbsoluteValue);
@@ -292,32 +289,38 @@
  */
 -(void)BackSubstitution
 {
-    int step = _n-1;    // Step value adjusted for use in the arrays of the linear system.
     double xValue;      // X value to be used throughout for calculations.
     
     // Calculates & stores the last X-value in the matrix X.
-    xValue = [[_matrixB objectAtIndex:step]doubleValue] / [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue];
+    xValue = [[_matrixB objectAtIndex:(_n-1)]doubleValue] / [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue];
     [_matrixX addObject:[NSNumber numberWithDouble:xValue]];
     
     // Loops backward through the rest of the linear system to solve for the remain X-values.
-    for (int row = (step-1); row >= 0; row--)
+    for (int row = (_n-2); row >= 0; --row)
     {
         // Stores the sum of values for each row.
-        int sum = 0;
+        double rowSum = 0.0;
         
-        for (int col = step; col < _n; col++)
+        for (int col = (row+1); col < _n; col++)
         {
             // Calculates value using x-value obtained in previous step/loop.
-            sum += [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * xValue;
+            rowSum += [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * xValue;
         }
         
-        // Calculates new x-value for this row.
-        xValue = ([[_matrixB objectAtIndex:row]doubleValue] - sum) / [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue];
+        // Calculates & stores new x-value for this row.
+        xValue = ([[_matrixB objectAtIndex:row]doubleValue] - rowSum) / [[[_matrixA objectAtIndex:row]objectAtIndex:row]doubleValue];
         [_matrixX insertObject:[NSNumber numberWithDouble:xValue]atIndex:0];
-        
-        // Decrements the step.
-        step--;
     }
+}
+
+/*
+ METHOD: RoundDoubleValue:ToThisManyDecimalPlaces:
+ This method takes a double value & rounds it to a given number of decimal places.
+ */
+-(double)RoundValue:(double)doubleValue ToXDecimalPlaces:(int)decimalPlaces
+{
+    const double doubleShift = pow(10.0, decimalPlaces);
+    return  floor(doubleValue * doubleShift + 0.5) / doubleShift;
 }
 
 @end
