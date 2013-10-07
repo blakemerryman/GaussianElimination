@@ -25,13 +25,13 @@ int main(int argc, const char * argv[]) // BEGIN PROGRAM
     LinearSystem *MyLinearSystem = [[LinearSystem alloc] initWithContentsOfString:dataFileContent];
     
     // Prints the BEFORE contents of the LinearSystem for debugging purposes.
-    // [MyLinearSystem PrintLinearSystem];
+    [MyLinearSystem PrintLinearSystem];
     
     // Solve linear system by Gaussian elimination using scaled partial pivoting.
     [MyLinearSystem SolveLinearSystem];
     
     // Prints the AFTER contents of the LinearSystem for debugging purposes.
-    // [MyLinearSystem PrintLinearSystem];
+    [MyLinearSystem PrintLinearSystem];
     
     } // END MEMORY MANAGEMENT BLOCK.
     

@@ -11,11 +11,13 @@
 #pragma mark - Private Methods Interface
 @interface LinearSystem (PrivateMethods)
 -(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings;
+-(void)ScaleLinearSystem;
 -(int)FindPivotElementForStep:(int)step;
 -(void)ReduceRowForStep:(int)step;
+-(void)BackSubstitution;
 @end
 
-#pragma mark - Public Methods Implementation
+#pragma mark - Public Method Implementations
 
 @implementation LinearSystem
 
@@ -42,9 +44,10 @@
     
     if (self)
     {
-        // Allocates memory & initializes the matrices A & B.
+        // Allocates memory & initializes the matrices A, B, & X.
         _matrixA = [[NSMutableArray alloc] init];
         _matrixB = [[NSMutableArray alloc] init];
+        _matrixX = [[NSMutableArray alloc] init];
         
         // Initializes the n-value for the linear system from the first line of the string.
         _n = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue];
@@ -73,7 +76,7 @@
     return self;
 }
 
-#pragma mark - Other Methods
+#pragma mark - Utility Methods
 
 /*
  METHOD: SolveLinearSystem
@@ -83,7 +86,10 @@
 {
     for (int step = 0; step < _n-1; step++)
     {
-        // Pivoting.
+        // Scaling.
+        [self ScaleLinearSystem];
+        
+        // Partial Pivoting.
         int newPivotLocation = [self FindPivotElementForStep:step];
         [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];
         
@@ -91,7 +97,7 @@
         [self ReduceRowForStep:step];
         
         // Back substitution.
-        
+        [self BackSubstitution];
     }
 }
 
@@ -156,6 +162,52 @@
 }
 
 /*
+ METHOD: ScaleLinearSystem
+ This method scales the linear system to assist in reducing progation of round off error.
+ */
+-(void)ScaleLinearSystem
+{
+    double maxAbsoluteValue = 0.0;
+    double tempAbsoluteValue;
+    
+    for (int row = 0; row < _n; row++)
+    {
+        for (int col = 0; col < _n; col++)
+        {
+            // Finds the absolute value of the next element in the column below the pivot element.
+            tempAbsoluteValue = fabs([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue]);
+            
+            // Compares the current largestAbs.Val. with the current indexed value.
+            if (tempAbsoluteValue > maxAbsoluteValue)
+            {
+                maxAbsoluteValue = tempAbsoluteValue;  // Assigns new largest absolute value.
+            }
+            
+        }
+    }
+    
+    // Error code prints if matrix only contains 0.0 as max value.
+    #warning Need to come up with standard minimum value to constitue "ZERO" ( 10^-7 ????)
+    if (maxAbsoluteValue == 0.0) { printf("ERROR: MATRIX A CONTAINS ONLY ZEROS!"); }
+    
+    // Calculates the matrix scaling factor.
+    double scalingFactor = fabs(1/maxAbsoluteValue);
+    
+    // Scales the matrices A & B.
+    for (int row = 0; row < _n; row++)
+    {
+        for (int col = 0; col < _n; col++)
+        {
+            // Scales the indexed element of matrix A.
+            [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * scalingFactor)]];
+        }
+        
+        // Scales the indexed element of matrix B.
+        [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:([[_matrixB objectAtIndex:row]doubleValue]*scalingFactor)]];
+    }
+}
+
+/*
  METHOD: FindPivotForStep
  This private method returns the location of the largest absolute value element in the column at or below the current pivot element.
  */
@@ -170,13 +222,13 @@
     for (int row = step+1; row < _n; row++)
     {
         // Finds the absolute value of the next element in the column below the pivot element.
-        double tempAbsVal = fabs( [[[_matrixA objectAtIndex:row] objectAtIndex:step] doubleValue] );
+        double temporaryAbsoluteValue = fabs( [[[_matrixA objectAtIndex:row] objectAtIndex:step] doubleValue] );
         
         // Compares the next element & the current largest element.
-        if (tempAbsVal > largestPivotValue)
+        if (temporaryAbsoluteValue > largestPivotValue)
         {
-            largestPivotValue = tempAbsVal;     // Assigns new largest absolute value.
-            pivotLocation = row;                // Assigns new largest abs.val. location.
+            largestPivotValue = temporaryAbsoluteValue; // Assigns new largest absolute value.
+            pivotLocation = row;                        // Assigns new largest abs.val. location.
         }
     }
     
@@ -189,21 +241,58 @@
  */
 -(void)ReduceRowForStep:(int)step
 {
+    double newValue; // To be used for temporary storage of newly calculate values.
+    
     for (int row = step+1; row < _n; row ++)
     {
         // Calculates the multiplier value.
-        double multiplier = [[[_matrixA objectAtIndex:row] objectAtIndex:step] doubleValue] /
-        [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue];
+        double multiplier = [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue] / [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue];
         
         for (int col = step; col < _n; col++)
         {
             // Calculates new row-reduced value for current element.
-            double newValue = [[[_matrixA objectAtIndex:row] objectAtIndex:col] doubleValue]
-            - multiplier * [[[_matrixA objectAtIndex:step] objectAtIndex:col] doubleValue];
-            
+            newValue = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] - multiplier * [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue];
             // Replaces the current element with the new value.
-            [[_matrixA objectAtIndex:row] replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:newValue]];
+            [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:newValue]];
         }
+        
+        // Calculates the new row value of matrix B.
+        newValue = [[_matrixB objectAtIndex:row]doubleValue] - multiplier * [[_matrixB objectAtIndex:step]doubleValue];
+        // Replaces the current element with the new value.
+        [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:newValue]];
+    }
+}
+
+/*
+ METHOD: BackSubstitution
+ This method performs back substitution to find the solutions and stores values in matrix X.
+ */
+-(void)BackSubstitution
+{
+    int step = _n-1;    // Step value adjusted for use in the arrays of the linear system.
+    double xValue;      // X value to be used throughout for calculations.
+    
+    // Calculates & stores the last X-value in the matrix X.
+    xValue = [[_matrixB objectAtIndex:step]doubleValue] / [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue];
+    [_matrixX addObject:[NSNumber numberWithDouble:xValue]];
+    
+    // Loops backward through the rest of the linear system to solve for the remain X-values.
+    for (int row = (step-1); row >= 0; row--)
+    {
+        // Stores the sum of values for each row.
+        int sum = 0;
+        
+        for (int col = step; col < _n; col++)
+        {
+            // Calculates value using x-value obtained in previous step/loop.
+            sum += [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * xValue;
+        }
+        
+        // Calculates new x-value for this row.
+        xValue = ([[_matrixB objectAtIndex:row]doubleValue] - sum) / [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue];
+        
+        // Decrements the step.
+        step--;
     }
 }
 
