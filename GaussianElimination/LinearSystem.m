@@ -47,7 +47,7 @@
         // Allocates memory & initializes the matrices A, B, & X.
         _matrixA = [[NSMutableArray alloc] init];
         _matrixB = [[NSMutableArray alloc] init];
-        _matrixX = [[NSMutableArray alloc] init];
+        _matrixX = [[NSMutableArray alloc] initWithCapacity:0];
         
         // Initializes the n-value for the linear system from the first line of the string.
         _n = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue];
@@ -129,7 +129,30 @@
         printf(" %.3f\n", [[_matrixB objectAtIndex:row] doubleValue]);
     }
     
-    printf("\n");
+    // Checks to make sure the Matrix X has objects inside before printing results.
+    if ([_matrixX count] > 0) {
+        // Prints the content of MatrixX.
+        printf("\nMatrix X:\n");
+        for (int row = 0; row < _n; row++)
+        {
+            printf(" %.3f\n", [[_matrixX objectAtIndex:row] doubleValue]);
+        }
+        
+        printf("\n");
+    }
+}
+
+/*
+ METHOD SaveSolutionToFile
+ This method saves the solution stored in Matrix X to a file.
+ */
+-(void)SaveSolutionToFile
+{
+    
+    
+    
+    
+    
 }
 
 #pragma mark - Private Method Implementations
@@ -290,6 +313,7 @@
         
         // Calculates new x-value for this row.
         xValue = ([[_matrixB objectAtIndex:row]doubleValue] - sum) / [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue];
+        [_matrixX insertObject:[NSNumber numberWithDouble:xValue]atIndex:0];
         
         // Decrements the step.
         step--;

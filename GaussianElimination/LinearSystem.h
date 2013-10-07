@@ -24,5 +24,6 @@
 #pragma mark - Utility Methods
 -(void)SolveLinearSystem;
 -(void)PrintLinearSystem;
+-(void)SaveSolutionToFile;
 
 @end
