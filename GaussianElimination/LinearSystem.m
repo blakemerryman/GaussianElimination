@@ -15,7 +15,6 @@
 -(int)FindPivotElementForStep:(int)step;
 -(void)ReduceRowForStep:(int)step;
 -(void)BackSubstitution;
--(double)RoundDoubleValue:(double)doubleValue ToThisManyDecimalPlaces:(int)decimalPlaces;
 @end
 
 #pragma mark - Public Method Implementations
@@ -69,10 +68,11 @@
         
         // Initializes the Matrix B for the linear system from the n+1st row of the string.
         _matrixB = [[[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:_n+1] componentsSeparatedByString:@" "] mutableCopy];
+        
         // Converts the matrix elements from strings to doubles.
         //_matrixB = [self ConvertArrayOfStringsToArrayOfDoubles:_matrixB];
-    
     }
+    
     return self;
 }
 
@@ -187,7 +187,7 @@
  */
 -(void)ScaleLinearSystem
 {
-    double maxAbsoluteValue = 0.0;
+    double maxAbsoluteValue = 0.0000;
     double tempAbsoluteValue;
     
     for (int row = 0; row < _n; row++)
@@ -311,16 +311,6 @@
         xValue = ([[_matrixB objectAtIndex:row]doubleValue] - rowSum) / [[[_matrixA objectAtIndex:row]objectAtIndex:row]doubleValue];
         [_matrixX insertObject:[NSNumber numberWithDouble:xValue]atIndex:0];
     }
-}
-
-/*
- METHOD: RoundDoubleValue:ToThisManyDecimalPlaces:
- This method takes a double value & rounds it to a given number of decimal places.
- */
--(double)RoundValue:(double)doubleValue ToXDecimalPlaces:(int)decimalPlaces
-{
-    const double doubleShift = pow(10.0, decimalPlaces);
-    return  floor(doubleValue * doubleShift + 0.5) / doubleShift;
 }
 
 @end
