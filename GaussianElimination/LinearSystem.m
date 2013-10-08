@@ -8,19 +8,18 @@
 
 #import "LinearSystem.h"
 
-#pragma mark - Private Methods Interface
+#pragma mark - Private Interface Methods
 @interface LinearSystem (PrivateMethods)
-//-(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings;
--(void)ScaleLinearSystem;
--(int)FindPivotElementForStep:(int)step;
--(void)ReduceRowForStep:(int)step;
--(void)BackSubstitution;
+
+-(void) ScaleRowByLargestValue;              // Scales a row based upon the largest value in row.
+-(int)  FindPivotElementForStep:(int)step;   // Finds the location of the largest possible pivot element.
+-(void) ReduceRowForStep:(int)step;          // Reduces the row at step n.
+-(void) BackSubstitution;                    // Back substitutes to find the values of Matrix X.
+
 @end
 
-#pragma mark - Public Method Implementations
+#pragma mark - Public Interface Method Implementations
 @implementation LinearSystem
-
-#pragma mark - Object Initializers
 
 /*
  METHOD: init
@@ -37,7 +36,7 @@
  METHOD: initWithContentsOfString
  This is a custom initializer that takes the contents of a string and inputs the values for n, MatrixA, & MatrixB into LinearSystem object's instance variables.
  */
-// TODO: Need to make this a private method called by the default init method.
+// TODO: Change to -initWithContentsOfFile:(NSString*)fileName AtPath:(NSString*)filePath
 -(id)initWithContentsOfString:(NSString *) stringContents
 {
     self = [super init];
@@ -59,9 +58,6 @@
             NSArray *rowOfValues = [[NSArray alloc] init];
             rowOfValues = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:i] componentsSeparatedByString:@" "];
             
-            // Converts that row of string values to doubles.
-            //rowOfValues = [self ConvertArrayOfStringsToArrayOfDoubles:rowOfValues];
-            
             // Adds row of doubles to the MatrixA.
             [_matrixA addObject:[rowOfValues mutableCopy]];
         
@@ -77,8 +73,6 @@
     return self;
 }
 
-#pragma mark - Utility Methods
-
 /*
  METHOD: SolveLinearSystem
  This method solves the linear system of equations using the method of Gaussian Elimination with scaled partial pivoting.
@@ -89,7 +83,7 @@
     {
         // Scaling.
         // TODO: Need to rewrite this to scale each row indepenent of each other.
-        [self ScaleLinearSystem];
+        [self ScaleRowByLargestValue];
         
         // Partial Pivoting.
         int newPivotLocation = [self FindPivotElementForStep:step];
@@ -104,10 +98,19 @@
 }
 
 /*
+ METHOD SaveSolutionToFile
+ This method saves the solution stored in Matrix X to a plain txt file.
+ */
+// TODO: Need to format the output better.
+-(void)SaveSolutionToFile
+{
+    [_matrixX writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
+}
+
+/*
  METHOD: PrintLinearSystem
  This method prints the contents of the linear system (n, matrix A, & matrix B) to the command line.
  */
-// TODO: Remove this later???
 -(void)PrintLinearSystem
 {
     // Prints the value of N.
@@ -145,18 +148,7 @@
     }
 }
 
-/*
- METHOD SaveSolutionToFile
- This method saves the solution stored in Matrix X to a plain txt file.
- */
-// TODO: Need to format the output better.
--(void)SaveSolutionToFile
-{
-    [_matrixX writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
-}
-
-#pragma mark - Private Method Implementations
-// This is the private implementation for the private method interface to be used only within the object.
+#pragma mark - Private Interface Method Implementations
 
 /*
  METHOD: ScaleLinearSystem
@@ -165,7 +157,7 @@
 // TODO: Need to rework this so that it scales the row based upon the largest element in the ROW, not the whole matrix.
 -(void)ScaleLinearSystem
 {
-    double maxAbsoluteValue = 0.0000;
+    double maxAbsoluteValue = 0.0;
     double tempAbsoluteValue;
     
     for (int row = 0; row < _n; row++)
@@ -184,9 +176,8 @@
         }
     }
     
-    // Error code prints if matrix only contains 0.0 as max value.
-    // TODO: Need to come up with standard minimum value to constitue "ZERO" ( 10^-7 ????)
-    // if (maxAbsoluteValue == 0.0) { printf("ERROR: MATRIX A CONTAINS ONLY ZEROS!"); }
+    // Error code prints if row max-value is less than 0.000001.
+    if (maxAbsoluteValue > pow(1, -6) ) { printf("ERROR: ROW CONTAINS ONLY ZEROS!"); }
     
     // Calculates the matrix scaling factor.
     double scalingFactor = fabs(1/maxAbsoluteValue);
