@@ -37,6 +37,7 @@
  METHOD: initWithContentsOfString
  This is a custom initializer that takes the contents of a string and inputs the values for n, MatrixA, & MatrixB into LinearSystem object's instance variables.
  */
+// TODO: Need to make this a private method called by the default init method.
 -(id)initWithContentsOfString:(NSString *) stringContents
 {
     self = [super init];
@@ -87,6 +88,7 @@
     for (int step = 0; step < _n-1; step++)
     {
         // Scaling.
+        // TODO: Need to rewrite this to scale each row indepenent of each other.
         [self ScaleLinearSystem];
         
         // Partial Pivoting.
@@ -105,6 +107,7 @@
  METHOD: PrintLinearSystem
  This method prints the contents of the linear system (n, matrix A, & matrix B) to the command line.
  */
+// TODO: Remove this later???
 -(void)PrintLinearSystem
 {
     // Prints the value of N.
@@ -146,45 +149,20 @@
  METHOD SaveSolutionToFile
  This method saves the solution stored in Matrix X to a plain txt file.
  */
+// TODO: Need to format the output better.
 -(void)SaveSolutionToFile
 {
-#warning Need to format the output better.
     [_matrixX writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
 }
 
 #pragma mark - Private Method Implementations
-
-///*
-// METHOD: ConvertArrayOfStringsToArrayOfDoubles
-// This private method takes an array of string values (obtained from the input data file), converts them to double precision float values,
-// stores them in a new array, and returns that new array of doubles.
-// */
-//-(NSMutableArray *)ConvertArrayOfStringsToArrayOfDoubles:(NSArray*)arrayOfStrings
-//{
-//    NSMutableArray* arrayOfDoubles = [[NSMutableArray alloc] initWithCapacity:0];
-//    
-//    // Gets the number of elements in arrayOfStrings
-//    NSUInteger elementCount = [arrayOfStrings count];
-//    
-//    for (int element = 0; element < elementCount; element++)
-//    {
-//        // Converts element of type string to type double.
-//        double elementValue = [[arrayOfStrings objectAtIndex:element] doubleValue];
-//        //NSLog(@" %.2f ", elementValue);
-//        
-//        // Adds element value to array.
-//        [arrayOfDoubles addObject: [NSNumber numberWithDouble:elementValue] ];
-//    }
-//    
-//    //NSLog(@"Array Element Count: %lu", (unsigned long)[arrayOfDoubles count]);
-//    
-//    return arrayOfDoubles;
-//}
+// This is the private implementation for the private method interface to be used only within the object.
 
 /*
  METHOD: ScaleLinearSystem
  This method scales the linear system to assist in reducing progation of round off error.
  */
+// TODO: Need to rework this so that it scales the row based upon the largest element in the ROW, not the whole matrix.
 -(void)ScaleLinearSystem
 {
     double maxAbsoluteValue = 0.0000;
@@ -207,7 +185,7 @@
     }
     
     // Error code prints if matrix only contains 0.0 as max value.
-#warning Need to come up with standard minimum value to constitue "ZERO" ( 10^-7 ????)
+    // TODO: Need to come up with standard minimum value to constitue "ZERO" ( 10^-7 ????)
     // if (maxAbsoluteValue == 0.0) { printf("ERROR: MATRIX A CONTAINS ONLY ZEROS!"); }
     
     // Calculates the matrix scaling factor.

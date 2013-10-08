@@ -6,35 +6,30 @@
 //  Copyright (c) 2013 Blake Merryman. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import "LinearSystem.h"
+#import <Foundation/Foundation.h>   // Imports the Foundation Framework
+#import "LinearSystem.h"            // Imports the LinearSystem Object
 
-// FUNCTION PROTOTYPES
-
-// MAIN FUNCTION
-int main(int argc, const char * argv[]) // BEGIN PROGRAM
-{   @autoreleasepool { // BEGIN MEMORY MANAGEMENT BLOCK.
+int main(int argc, const char * argv[])
+{
+    @autoreleasepool
+    { // BEGIN MEMORY MANAGEMENT BLOCK.
     
     // Establishes the path to file & stores contents in a string.
+    // TODO: Need to abstract the input method to be more versatile & userfriendly (add to -init as private method that requests user input).
     NSURL *dataFileURL = [NSURL fileURLWithPath:@"/Users/blakemerryman/Desktop/data2.txt"];
-    NSString *dataFileContent = [NSString stringWithContentsOfURL:dataFileURL
-                                                         encoding:NSUTF8StringEncoding
-                                                            error:nil];
+    NSString *dataFileContent = [NSString stringWithContentsOfURL:dataFileURL encoding:NSUTF8StringEncoding error:nil];
     
     // Creates new instance of LinearSystem object and initializes it with contents of the file.
+    // TODO: Need to make -init the primary means of initializing.
     LinearSystem *MyLinearSystem = [[LinearSystem alloc] initWithContentsOfString:dataFileContent];
     
-    // Prints the BEFORE contents of the LinearSystem for debugging purposes.
-    [MyLinearSystem PrintLinearSystem];
+    //[MyLinearSystem PrintLinearSystem];   // DEBUGGING: Prints the BEFORE contents of the LinearSystem for debugging purposes.
     
-    // Solve linear system by Gaussian elimination using scaled partial pivoting.
-    [MyLinearSystem SolveLinearSystem];
+    [MyLinearSystem SolveLinearSystem];     // Solve linear system by Gaussian elimination using scaled partial pivoting.
     
-    // Prints the AFTER contents of the LinearSystem for debugging purposes.
-    [MyLinearSystem PrintLinearSystem];
+    //[MyLinearSystem PrintLinearSystem];   // DEBUGGING: Prints the AFTER contents of the LinearSystem for debugging purposes.
     
-    // Saves the solution to file.
-    [MyLinearSystem SaveSolutionToFile];
+    [MyLinearSystem SaveSolutionToFile];    // Saves the solution to file.
     
     } // END MEMORY MANAGEMENT BLOCK.
     
