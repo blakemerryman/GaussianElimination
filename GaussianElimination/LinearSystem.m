@@ -11,10 +11,10 @@
 #pragma mark - Private Interface Methods
 @interface LinearSystem (PrivateMethods)
 
--(void) ScaleRowByLargestValue;              // Scales a row based upon the largest value in row.
--(int)  FindPivotElementForStep:(int)step;   // Finds the location of the largest possible pivot element.
--(void) ReduceRowForStep:(int)step;          // Reduces the row at step n.
--(void) BackSubstitution;                    // Back substitutes to find the values of Matrix X.
+-(void) ScaleRowByLargestValueAt:(int)rowIndex;  // Scales a row based upon the largest value in row.
+-(int)  FindPivotElementForStep:(int)step;       // Finds the location of the largest possible pivot element.
+-(void) ReduceRowsForStep:(int)step;             // Reduces the rows at step n.
+-(void) BackSubstitution;                        // Back substitutes to find the values of Matrix X.
 
 @end
 
@@ -23,7 +23,8 @@
 
 /*
  METHOD: init
- This is the default initializater mandated by Objective C objects that inherit from the NSObject (foundation object).
+ This is the default initializater mandated by Objective C objects that inherit from 
+ the NSObject (foundation object).
  */
 -(id)init
 {
@@ -34,9 +35,9 @@
 
 /*
  METHOD: initWithContentsOfString
- This is a custom initializer that takes the contents of a string and inputs the values for n, MatrixA, & MatrixB into LinearSystem object's instance variables.
+ This is a custom initializer that takes the contents of a string and initializes the 
+ values for n, MatrixA, & MatrixB into LinearSystem object's instance variables.
  */
-// TODO: Change to -initWithContentsOfFile:(NSString*)fileName AtPath:(NSString*)filePath
 -(id)initWithContentsOfString:(NSString *) stringContents
 {
     self = [super init];
@@ -54,20 +55,19 @@
         // Initializes the Matrix A for the linear system from the next n-rows of the string.
         for (int i = 1; i <= _n; i++)
         {
-            // Gets the ith row of string values from the data string.
+            // Allocates & initializes (default value) a NSArray of rowValues.
             NSArray *rowOfValues = [[NSArray alloc] init];
+            
+            // Parses & extracts string values at ith row of stringContents and converts them to doubles. Stores in array of row values.
+            // TODO: Need to convert to doubles.
             rowOfValues = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:i] componentsSeparatedByString:@" "];
             
             // Adds row of doubles to the MatrixA.
             [_matrixA addObject:[rowOfValues mutableCopy]];
-        
         }
         
         // Initializes the Matrix B for the linear system from the n+1st row of the string.
         _matrixB = [[[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:_n+1] componentsSeparatedByString:@" "] mutableCopy];
-        
-        // Converts the matrix elements from strings to doubles.
-        //_matrixB = [self ConvertArrayOfStringsToArrayOfDoubles:_matrixB];
     }
     
     return self;
@@ -75,26 +75,27 @@
 
 /*
  METHOD: SolveLinearSystem
- This method solves the linear system of equations using the method of Gaussian Elimination with scaled partial pivoting.
+ This method solves the linear system of equations using the method of Gaussian Elimination 
+ with scaled partial pivoting.
  */
 -(void)SolveLinearSystem
 {
-    for (int step = 0; step < _n-1; step++)
-    {
-        // Scaling.
-        // TODO: Need to rewrite this to scale each row indepenent of each other.
-        [self ScaleRowByLargestValue];
-        
-        // Partial Pivoting.
-        int newPivotLocation = [self FindPivotElementForStep:step];
-        [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];
-        
-        // Row reduction.
-        [self ReduceRowForStep:step];
+    // Scales the each row of Matrix A by the largest value in that row.
+    for (int rowIndex = 0; rowIndex < _n; rowIndex++)   {
+        [self ScaleRowByLargestValueAt:rowIndex];
     }
     
-    // Back substitution.
-    [self BackSubstitution];
+    // For each step, this block will enact partial pivoting & row reduction to set up for solving by back substition.
+    for (int step = 0; step < _n-1; step++) // TODO: Should step < (_n-1) OR _n ???
+    {
+        int newPivotLocation = [self FindPivotElementForStep:step];                 // Returns the row index of best possible pivot location.
+        
+        [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];   // Framework provided method that swaps the object indices (instead of contents).
+        
+        [self ReduceRowsForStep:step];                                              // Reduce rows at current step.
+    }
+    
+    [self BackSubstitution];                                                        // Calls for back substitution.
 }
 
 /*
@@ -155,45 +156,54 @@
  This method scales the linear system to assist in reducing progation of round off error.
  */
 // TODO: Need to rework this so that it scales the row based upon the largest element in the ROW, not the whole matrix.
--(void)ScaleLinearSystem
+-(void)ScaleRowByLargestValueAt:(int)rowIndex
 {
-    double maxAbsoluteValue = 0.0;
-    double tempAbsoluteValue;
     
-    for (int row = 0; row < _n; row++)
-    {
-        for (int col = 0; col < _n; col++)
-        {
-            // Finds the absolute value of the next element in the column below the pivot element.
-            tempAbsoluteValue = fabs([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue]);
-            
-            // Compares the current largestAbs.Val. with the current indexed value.
-            if (tempAbsoluteValue > maxAbsoluteValue)
-            {
-                maxAbsoluteValue = tempAbsoluteValue;  // Assigns new largest absolute value.
-            }
-            
-        }
-    }
     
-    // Error code prints if row max-value is less than 0.000001.
-    if (maxAbsoluteValue > pow(1, -6) ) { printf("ERROR: ROW CONTAINS ONLY ZEROS!"); }
     
-    // Calculates the matrix scaling factor.
-    double scalingFactor = fabs(1/maxAbsoluteValue);
+
     
-    // Scales the matrices A & B.
-    for (int row = 0; row < _n; row++)
-    {
-        for (int col = 0; col < _n; col++)
-        {
-            // Scales the indexed element of matrix A.
-            [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * scalingFactor)]];
-        }
-        
-        // Scales the indexed element of matrix B.
-        [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:([[_matrixB objectAtIndex:row]doubleValue]*scalingFactor)]];
-    }
+    
+    
+    
+//    double maxAbsoluteValue = 0.0;
+//    double tempAbsoluteValue;
+//    
+//    for (int row = 0; row < _n; row++)
+//    {
+//        for (int col = 0; col < _n; col++)
+//        {
+//            // Finds the absolute value of the next element in the column below the pivot element.
+//            tempAbsoluteValue = fabs([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue]);
+//            
+//            // Compares the current largestAbs.Val. with the current indexed value.
+//            if (tempAbsoluteValue > maxAbsoluteValue)
+//            {
+//                maxAbsoluteValue = tempAbsoluteValue;  // Assigns new largest absolute value.
+//            }
+//            
+//        }
+//    }
+//    
+//    // Error code prints if row max-value is less than 0.000001.
+//    if (maxAbsoluteValue > pow(1, -6) ) { printf("ERROR: ROW CONTAINS ONLY ZEROS!"); }
+//    
+//    // Calculates the matrix scaling factor.
+//    double scalingFactor = fabs(1/maxAbsoluteValue);
+//    
+//    // Scales the matrices A & B.
+//    for (int row = 0; row < _n; row++)
+//    {
+//        for (int col = 0; col < _n; col++)
+//        {
+//            // Scales the indexed element of matrix A.
+//            [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * scalingFactor)]];
+//        }
+//        
+//        // Scales the indexed element of matrix B.
+//        [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:([[_matrixB objectAtIndex:row]doubleValue]*scalingFactor)]];
+//    }
+
 }
 
 /*
