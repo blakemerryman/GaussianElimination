@@ -15,7 +15,7 @@
 //
 
 
-#import <Foundation/Foundation.h>   // Imports the Foundation Framework
+#import <Foundation/Foundation.h>   // Imports the Objective C Foundation Framework
 #import "LinearSystem.h"            // Imports the LinearSystem Object
 
 /*
@@ -33,7 +33,7 @@ void displayIntroductionMessage(void)
 
 /*
  FUNCTION: debugPrintStatement
- This function displays the content of the linear system if the debugging feature of the project is turned on. Otherwise, nothing occurs.
+ This function displays the content of the linear system if the debugging feature of the project is turned on (set to 1). Otherwise, nothing occurs.
  */
 void debugPrintStatement(LinearSystem *MyLinearSystem)
 {
@@ -52,10 +52,10 @@ int main(int argc, const char * argv[])
     @autoreleasepool
     { // BEGIN MEMORY MANAGEMENT BLOCK.
     
-        displayIntroductionMessage();
+        displayIntroductionMessage();           // Displays the introduction message.
         
-        // Establishes the path to file & stores contents in a string.
-        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data2.txt"
+        // Allocates & initializes a string with the contents of plain text file found at specified path. Default is "data.txt" on the desktop.
+        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data.txt"
                                                                      encoding:NSUTF8StringEncoding
                                                                         error:nil];
         
@@ -74,3 +74,4 @@ int main(int argc, const char * argv[])
     
     return 0; // END PROGRAM
 }
+

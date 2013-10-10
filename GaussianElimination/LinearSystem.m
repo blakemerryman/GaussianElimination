@@ -18,12 +18,11 @@
 
 #pragma mark - Private Interface Method Declarations
 @interface LinearSystem (PrivateMethods)
-
+// This is the private method interface for my LinearSystem object. These methods are only available to the implementation file.
 -(void)ScaleRowsByLargestAbsoluteValueInRow;               // Scales a row based upon the largest value in row.
 -(NSUInteger)FindPivotElementForStep:(NSUInteger)step;     // Finds the location of the largest possible pivot element.
 -(void)ReduceRowsForStep:(NSUInteger)step;                 // Reduces the rows at step n.
 -(void)BackSubstitution;                                   // Back substitutes to find the values of Matrix X.
-
 @end
 
 
@@ -43,9 +42,9 @@
 }
 
 /*
- METHOD: initWithContentsOfString
- This is a custom initializer that takes the contents of a string and initializes the 
- values for n, MatrixA, & MatrixB into LinearSystem object's instance variables.
+ METHOD: initWithContentsOfStrings
+ This is a custom initializer that takes the contents of a string and initializes the values
+ for n, LS_ZERO_THRESHOLD, MatrixA, & MatrixB into LinearSystem object's instance variables.
  */
 -(id)initWithContentsOfString:(NSString *) stringContents
 {
@@ -222,10 +221,10 @@
         }
         
         // SAFETY: If the largest value in the row is less than our defined "zero"...
-        if (largestAbsValColIndex < _LS_ZERO_THRESHOLD)
+        if (largestAbsoluteValueForRow < _LS_ZERO_THRESHOLD)
         {
             // Display error message to terminal & terminate program.
-            NSLog(@"ERROR: In Matrix A, Row %lu contains all zeros (as defined by the program). Matrix is singular.",(unsigned long)rowIndex); exit(0);
+            NSLog(@"ERROR: In Matrix A, Row %lu contains all zeros (as defined by the program). Matrix is singular.",(unsigned long)rowIndex+1); exit(0);
         }
         
         // Calculates the row scaling factor.
@@ -279,7 +278,7 @@
     if (largestAbsoluteValueForColumn < _LS_ZERO_THRESHOLD)
     {
         // Display error message to terminal & terminate program.
-        NSLog(@"ERROR: In Matrix A, Column %lu contains all zeros (as defined by the program) at or below pivot. Matrix A is singular.",(unsigned long)pivotIndex); exit(0);
+        NSLog(@"ERROR: In Matrix A, Column %lu contains all zeros (as defined by the program) at or below pivot. Matrix A is singular.",(unsigned long)pivotIndex+1); exit(0);
     }
     
     return pivotIndex;
@@ -354,7 +353,7 @@
         if ( [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:rowIndex]doubleValue] < _LS_ZERO_THRESHOLD )
         {
             // Display error message to terminal and terminate the program.
-            NSLog(@"ERROR: Attempted to divide by zero during back substitution on the %lith step!",(long)rowIndex); exit(0);
+            NSLog(@"ERROR: Attempted to divide by zero during back substitution on the %lith step!",(long)rowIndex+1); exit(0);
         }
         
         // Calculates new x value for this row.
