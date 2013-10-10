@@ -29,7 +29,13 @@
 -(id)init
 {
     self = [super init];
-    if (self) { /* Implementation stub of mandatory default constructor. */ }
+    if (self) {
+        // Allocates memory & initializes the matrices A, B, X, & zero threshold value..
+        _matrixA = [[NSMutableArray alloc] init];
+        _matrixB = [[NSMutableArray alloc] init];
+        _matrixX = [[NSMutableArray alloc] initWithCapacity:0];
+        _LS_ZERO_THRES = 0.000001; // TODO: Need to standardize this & put in exponential form ???
+    }
     return self;
 }
 
@@ -44,11 +50,6 @@
     
     if (self)
     {
-        // Allocates memory & initializes the matrices A, B, & X.
-        _matrixA = [[NSMutableArray alloc] init];
-        _matrixB = [[NSMutableArray alloc] init];
-        _matrixX = [[NSMutableArray alloc] initWithCapacity:0];
-        
         // Initializes the n-value for the linear system from the first line of the string.
         _n = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue];
         
