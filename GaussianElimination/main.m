@@ -16,9 +16,9 @@
 void displayIntroductionMessage(void)
 {
     // Prints the welcome message that explains the program.
-    printf("/nThis program takes a TXT file from user input & uses the method of");
-    printf("/nGaussian Elimination (with Scaled Partial Pivoting) to solve the");
-    printf("/ngiven linear system. It saves the result to a file./n/n");
+    printf("\nThis program takes a TXT file from user input & uses the method of");
+    printf("\nGaussian Elimination (with Scaled Partial Pivoting) to solve the");
+    printf("\ngiven linear system. It saves the result to a file.\n");
 }
 
 /*
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[])
         displayIntroductionMessage();
         
         // Establishes the path to file & stores contents in a string.
-        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data2.txt"
+        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data.txt"
                                                                      encoding:NSUTF8StringEncoding
                                                                         error:nil];
         

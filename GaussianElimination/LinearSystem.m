@@ -11,15 +11,16 @@
 #pragma mark - Private Interface Method Declarations
 @interface LinearSystem (PrivateMethods)
 
--(void)ScaleRowsByLargestValueAt:(NSUInteger)rowIndex;     // Scales a row based upon the largest value in row.
+-(void)ScaleRowsByLargestAbsoluteValueInRow;               // Scales a row based upon the largest value in row.
 -(NSUInteger)FindPivotElementForStep:(NSUInteger)step;     // Finds the location of the largest possible pivot element.
 -(void)ReduceRowsForStep:(NSUInteger)step;                 // Reduces the rows at step n.
 -(void)BackSubstitution;                                   // Back substitutes to find the values of Matrix X.
 
 @end
 
-#pragma mark - Public Interface Method Implementations
+
 @implementation LinearSystem
+#pragma mark - Public Interface Method Implementations
 
 /*
  METHOD: init
@@ -63,6 +64,9 @@
         // Allocates & initializes an empty array of rowValues.
         NSMutableArray *rowOfValues = [[NSMutableArray alloc] init];
         
+        // Creates & initializes value to hold parsed row elements.
+        double rowElement = 0;
+        
         // Fills the Matrix A with arrays of row values (after finding them, of course).
         for (NSUInteger row = 1; row <= _n; row++)
         {
@@ -77,16 +81,16 @@
                  *      4. Returns the element (entry from line) held at the index "col".
                  *      5. Returns the double value for the element to be stored in the double rowElement.
                  */
-                double rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:row]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
+                rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:row]componentsSeparatedByString:@" "]objectAtIndex:col] doubleValue];
                 
                 // Wraps double value in NSNumber object wrapper & adds it to the end of the array of row values.
                 [rowOfValues addObject:[NSNumber numberWithDouble: rowElement]];
                 
                 // Repurposes rowElement to retrieve & store the values for B in the same manner as for the rowOfValues array.
-                rowElement = [[[[[stringContents componentsSeparatedByString:@"/n"]objectAtIndex:(_n+1)]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
+                //rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:(_n+1)]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
                 
                 // Wraps double value in NSNumber object wrapper & adds it to the end of the array B.
-                [_matrixB addObject:[NSNumber numberWithDouble:rowElement]];
+                //[_matrixB addObject:[NSNumber numberWithDouble:rowElement]];
             }
             // Adds row of values to the matrix B.
             [_matrixA addObject:[rowOfValues mutableCopy]];
@@ -102,23 +106,27 @@
  */
 -(void)SolveLinearSystem
 {
-    // Scales the each row of Matrix A by the largest value in that row.
-    for (NSUInteger rowIndex = 0; rowIndex < _n; rowIndex++)
+    // Scales the rows of the linear system by the largest absolute value in each row.
+    [self ScaleRowsByLargestAbsoluteValueInRow];
+    
+    // Creates & initializes value to hold newPivot location.
+    NSUInteger newPivotLocation = 0;
+    
+    // Loops through the steps of the matrix in the solving process...
+    for (NSUInteger step = 0; step < _n; step++)
     {
-        [self ScaleRowsByLargestValueAt:rowIndex];
+        // Returns the row index of best possible pivot location.
+        newPivotLocation = [self FindPivotElementForStep:step];
+        
+        // Framework provided method that swaps the object indices (instead of object contents).
+        [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];
+        
+        // Reduce rows at current step.
+        [self ReduceRowsForStep:step];
     }
     
-    // For each step, this block will enact partial pivoting & row reduction to set up for solving by back substition.
-    for (NSUInteger step = 0; step < _n-1; step++) // TODO: Should step < (_n-1) OR _n ???
-    {
-        NSUInteger newPivotLocation = [self FindPivotElementForStep:step];          // Returns the row index of best possible pivot location.
-        
-        [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];   // Framework provided method that swaps the object indices (instead of contents).
-        
-        [self ReduceRowsForStep:step];                                              // Reduce rows at current step.
-    }
-    
-    [self BackSubstitution];                                                        // Calls for back substitution.
+    // Calls for back substitution.
+    [self BackSubstitution];
 }
 
 /*
@@ -128,6 +136,11 @@
 // TODO: Need to format the output better.
 -(void)SaveSolutionToFile
 {
+    printf("\n\nThis program saves the solutions to the desktop in \"soltions.txt\".");
+    
+    
+    
+    
     [_matrixX writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
 }
 
@@ -141,7 +154,7 @@
     printf("\nN is %lu\n", (unsigned long)_n);
     
     // Prints the content of MatrixA.
-    printf("\nMatrix A:\n");
+    printf("Matrix A:\n");
     
     for (int row = 0; row < _n; row++)
     {
@@ -153,7 +166,7 @@
     }
     
     // Prints the content of MatrixB.
-    printf("\nMatrix B:\n");
+    printf("Matrix B:\n");
     for (int row = 0; row < _n; row++)
     {
         printf(" %.4f\n", [[_matrixB objectAtIndex:row] doubleValue]);
@@ -175,54 +188,56 @@
 #pragma mark - Private Interface Method Implementations
 
 /*
- METHOD: ScaleLinearSystem
+ METHOD: ScaleRowsByLargestValueAtInRow
  This method scales the linear system to assist in reducing progation of round off error.
  */
-// TODO: Need to rework this so that it scales the row based upon the largest element in the ROW, not the whole matrix.
--(void)ScaleRowByLargestValueAt:(NSUInteger)rowIndex
+-(void)ScaleRowsByLargestAbsoluteValueInRow
 {
-    double largestAbsoluteValueForRow = 0;  // Create & initialize the value to hold the current largest abs.val.
-    double temporaryValueInRow = 0;         // Create & initialize the value to hold the temporary values to be used for comparisons & calculations.
-    NSUInteger largestAbsValColIndex = 0;   // Create & initialize the value to hold the current largest abs.val.'s column index.
-    
-    // Loops through all of the elements of the row.
-    for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
+    for (NSUInteger rowIndex = 0; rowIndex < _n; rowIndex++)
     {
-        // Calculates the absolue value of the current column term in the row.
-        temporaryValueInRow = fabs( [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] );
+        double largestAbsoluteValueForRow = 0;  // Create & initialize the value to hold the current largest abs.val.
+        double temporaryValueInRow = 0;         // Create & initialize the value to hold the temporary values to be used for comparisons & calculations.
+        NSUInteger largestAbsValColIndex = 0;   // Create & initialize the value to hold the current largest abs.val.'s column index.
         
-        if (temporaryValueInRow > largestAbsoluteValueForRow)   // Checks if the temporary is larger than the largest. If so...
+        // Loops through all of the elements of the row.
+        for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
         {
-            largestAbsoluteValueForRow = temporaryValueInRow;   // Update the largest value to be the temp. value.
-            largestAbsValColIndex = colIndex;                   // Update the largest's col index to be that of the temp value.
+            // Calculates the absolue value of the current column term in the row.
+            temporaryValueInRow = fabs( [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] );
+            
+            if (temporaryValueInRow > largestAbsoluteValueForRow)   // Checks if the temporary is larger than the largest. If so...
+            {
+                largestAbsoluteValueForRow = temporaryValueInRow;   // Update the largest value to be the temp. value.
+                largestAbsValColIndex = colIndex;                   // Update the largest's col index to be that of the temp value.
+            }
         }
-    }
-    
-    // SAFETY: If the largest value in the row is less than our defined "zero"...
-    if (largestAbsValColIndex < _LS_ZERO_THRESHOLD)
-    {
-        // Display error message to terminal & terminate program.
-        NSLog(@"ERROR: In Matrix A, Row %lu contains all zeros as defined by the program.",(unsigned long)rowIndex); exit(0);
-    }
-    
-    // Calculates the row scaling factor.
-    double scalingFactor = fabs( 1 / [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:largestAbsValColIndex] doubleValue] );
-    
-    // Loops through all values in the row.
-    for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
-    {
-        /* FOR MATRIX A (current row) */
-        // Calculates the newly scaled value at current column index for row.
-        temporaryValueInRow = [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] * scalingFactor;
-        // Replaces the original value with newly scaled value at given current column index for row.
-        [[_matrixA objectAtIndex:rowIndex] replaceObjectAtIndex:colIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
         
-        // ASK - Do we need to scale the given row in B as well ???
-        /* FOR MATRIX B (current row) */
-        // Calculates the newly scaled value at current row index.
-        temporaryValueInRow = [[_matrixB objectAtIndex:rowIndex] doubleValue] * scalingFactor;
-        // Replaces the original value with newly scaled value at current row index for row.
-        [_matrixB replaceObjectAtIndex:rowIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
+        // SAFETY: If the largest value in the row is less than our defined "zero"...
+        if (largestAbsValColIndex < _LS_ZERO_THRESHOLD)
+        {
+            // Display error message to terminal & terminate program.
+            NSLog(@"ERROR: In Matrix A, Row %lu contains all zeros as defined by the program.",(unsigned long)rowIndex); exit(0);
+        }
+        
+        // Calculates the row scaling factor.
+        double scalingFactor = fabs( 1 / [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:largestAbsValColIndex] doubleValue] );
+        
+        // Loops through all values in the row...
+        for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
+        {
+            /* FOR MATRIX A (current row) */
+            // Calculates the newly scaled value at current column index for row.
+            temporaryValueInRow = [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] * scalingFactor;
+            // Replaces the original value with newly scaled value at given current column index for row.
+            [[_matrixA objectAtIndex:rowIndex] replaceObjectAtIndex:colIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
+            
+            // ASK - "For partial scaling, do we need to scale the given row in B as well?"
+            /* FOR MATRIX B (current row) */
+            // Calculates the newly scaled value at current row index.
+            temporaryValueInRow = [[_matrixB objectAtIndex:rowIndex] doubleValue] * scalingFactor;
+            // Replaces the original value with newly scaled value at current row index for row.
+            [_matrixB replaceObjectAtIndex:rowIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
+        }
     }
 }
 
@@ -232,33 +247,41 @@
  */
 -(NSUInteger)FindPivotElementForStep:(NSUInteger)step
 {
-    // Creates pivot location & inits with step count.
-    NSUInteger pivotLocation = step;
+    NSUInteger pivotIndex = step;               // Creates & initializes (with step) the value to hold the current column's best pivot row-index.
+    double largestAbsoluteValueForColumn = 0;   // Creates & initializes the value to hold the largestAbs.Val. for the column.
+    double temporateColumnValue = 0;            // Creates & initializes the value to hold temporary values for comparisons & calculations.
     
-    // Creates largest value & inits with current value at step.
-    double largestPivotValue = fabs( [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue] );
+    // Sets largestAbs.Val.ForCol. to be the abs.val. of the current pivot element.
+    largestAbsoluteValueForColumn = fabs( [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue] );
     
-    for (NSUInteger row = step+1; row < _n; row++)
+    // Loops through all values in the column beneath the starting pivot index.
+    for (NSUInteger rowIndex = step+1; rowIndex < _n; rowIndex++)
     {
         // Finds the absolute value of the next element in the column below the pivot element.
-        double temporaryAbsoluteValue = fabs( [[[_matrixA objectAtIndex:row] objectAtIndex:step] doubleValue] );
+        temporateColumnValue = fabs( [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:step] doubleValue] );
         
-        // Compares the next element & the current largest element.
-        if (temporaryAbsoluteValue > largestPivotValue)
+        if (temporateColumnValue > largestAbsoluteValueForColumn)   // Checks if the temporary is larger than the largest. If so...
         {
-            largestPivotValue = temporaryAbsoluteValue; // Assigns new largest absolute value.
-            pivotLocation = row;                        // Assigns new largest abs.val. location.
+            largestAbsoluteValueForColumn = temporateColumnValue;   // Update the largest value to be the temp. value.
+            pivotIndex = rowIndex;                                  // Update the largest's row index to be that of the temp value.
         }
     }
     
-    return pivotLocation;
+    // SAFETY: If the largest value in the column is less than our defined "zero"...
+    if (largestAbsoluteValueForColumn < _LS_ZERO_THRESHOLD)
+    {
+        // Display error message to terminal & terminate program.
+        NSLog(@"ERROR: In Matrix A, C %lu contains all zeros as defined by the program.",(unsigned long)pivotIndex); exit(0);
+    }
+    
+    return pivotIndex;
 }
 
 /*
  METHOD: ReduceRowForStep
  This method performs the row reduction for each step.
  */
--(void)ReduceRowForStep:(NSUInteger)step
+-(void)ReduceRowsForStep:(NSUInteger)step
 {
     double newValue; // To be used for temporary storage of newly calculate values.
     
