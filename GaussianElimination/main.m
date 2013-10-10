@@ -50,7 +50,7 @@ int main(int argc, const char * argv[])
         LinearSystem *MyLinearSystem = [[LinearSystem alloc] initWithContentsOfString:dataFileContents];
         
         [MyLinearSystem SolveLinearSystem];     // Solve linear system by Gaussian elimination using scaled partial pivoting.
-                
+        
         [MyLinearSystem SaveSolutionToFile];    // Saves the solution to file.
     
     } // END MEMORY MANAGEMENT BLOCK.
