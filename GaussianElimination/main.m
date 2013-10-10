@@ -28,7 +28,7 @@ void displayIntroductionMessage(void)
     printf("\nGAUSSIAN ELIMINATION by BLAKE MERRYMAN\n");
     
     // Prints the introduction message that explains the program.
-    printf("\nThis is a command line tool designed to receive a nxn linear system of equations, Ax=b, from user\nprovided text file and solve the system using the method of Gaussian Elimination with Scaled\nPartial Pivoting. There are built in safety checks to ensure that the matrix is invertible.\nError messages will display in the terminal if the matrix is singular. After solving, the\nanswer is saved to a text file on the desktop.\n");
+    printf("\nThis is a command line tool designed to receive a nxn linear system of equations, Ax=b, from user\nprovided text file and solve the system using the method of Gaussian Elimination with Scaled\nPartial Pivoting. There are built in safety checks to ensure that the matrix is invertible.\nError messages will display below if the matrix is singular. After solving, the\nanswer is saved to a text file on the desktop.\n\n");
 }
 
 /*
@@ -37,7 +37,7 @@ void displayIntroductionMessage(void)
  */
 void debugPrintStatement(LinearSystem *MyLinearSystem)
 {
-    int dEBUG = 1;
+    int dEBUG = 0;
     if (dEBUG == 1)
     {
         [MyLinearSystem PrintLinearSystem];
@@ -55,7 +55,7 @@ int main(int argc, const char * argv[])
         displayIntroductionMessage();
         
         // Establishes the path to file & stores contents in a string.
-        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data.txt"
+        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data2.txt"
                                                                      encoding:NSUTF8StringEncoding
                                                                         error:nil];
         

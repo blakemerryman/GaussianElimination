@@ -140,12 +140,29 @@
  METHOD SaveSolutionToFile
  This method saves the solution stored in Matrix X to a plain txt file.
  */
-// TODO: Need to format the output better.
 -(void)SaveSolutionToFile
 {
-    printf("\n\nThis program saves the solutions to the desktop in \"soltions.txt\".");
-
-    [_matrixB writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
+    //[_matrixB writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
+    NSString* writeContentsToFileName = @"/Users/blakemerryman/Desktop/solution.txt";
+    
+    // Allocates & initializes a string that will hold our solution values.
+    NSString* stringToSave = [[NSString alloc] init];
+    
+    // Loops through the solution values...
+    for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
+    {
+        // Converts each solution's double value to formatted string values. Decimal places are given by the .# in the string.
+        [_matrixB replaceObjectAtIndex:colIndex withObject:[NSString stringWithFormat:@"%.4f",[[_matrixB objectAtIndex:colIndex] doubleValue]]];
+        
+        // Appends the formatted solution value to the string to string to be saved. Seperates each by a newline character.
+        stringToSave = [stringToSave stringByAppendingFormat:@"%@\n",[_matrixB objectAtIndex:colIndex]];
+    }
+    
+    // Writes content of string to plain text file. Checks to ensure that file exists; creates it if needed.
+    [stringToSave writeToFile:writeContentsToFileName
+                   atomically:YES
+                     encoding:NSASCIIStringEncoding
+                        error:nil];
 }
 
 /*
