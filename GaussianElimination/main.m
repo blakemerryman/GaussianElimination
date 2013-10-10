@@ -42,7 +42,7 @@ int main(int argc, const char * argv[])
         displayIntroductionMessage();           // Displays the introduction message.
         
         // Allocates & initializes a string with the contents of plain text file found at specified path. Default is "data.txt" on the desktop.
-        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data.txt"
+        NSString *dataFileContents = [[NSString alloc] initWithContentsOfFile:@"/Users/blakemerryman/Desktop/data0.txt"
                                                                      encoding:NSUTF8StringEncoding
                                                                         error:nil];
         

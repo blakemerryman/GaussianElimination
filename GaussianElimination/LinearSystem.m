@@ -17,12 +17,13 @@
 #import "LinearSystem.h"
 
 #pragma mark - Private Interface Method Declarations
-@interface LinearSystem (PrivateMethods)
-// This is the private method interface for my LinearSystem object. These methods are only available to the implementation file.
+@interface LinearSystem (PrivateMethods)                   // This is the private method interface for LinearSystem object.
+
 -(void)ScaleRowsByLargestAbsoluteValueInRow;               // Scales a row based upon the largest value in row.
 -(NSUInteger)FindPivotElementForStep:(NSUInteger)step;     // Finds the location of the largest possible pivot element.
 -(void)ReduceRowsForStep:(NSUInteger)step;                 // Reduces the rows at step n.
 -(void)BackSubstitution;                                   // Back substitutes to find the values of Matrix X.
+
 @end
 
 
@@ -174,12 +175,17 @@
 {
     for (NSUInteger rowIndex = 0; rowIndex < _n; rowIndex++)
     {
-        double largestAbsoluteValueForRow = 0;  // Create & initialize the value to hold the current largest abs.val.
-        double temporaryValueInRow = 0;         // Create & initialize the value to hold the temporary values to be used for comparisons & calculations.
-        NSUInteger largestAbsValColIndex = 0;   // Create & initialize the value to hold the current largest abs.val.'s column index.
+        // Creates & intializes the largest abs.val. to be the first value in the row.
+        double largestAbsoluteValueForRow = fabs([[[_matrixA objectAtIndex:rowIndex] objectAtIndex:rowIndex] doubleValue]);
+        
+        // Create & initialize the largest abs.val.'s row col.index to be the first element in row.
+        NSUInteger largestAbsValColIndex = 0;
+        
+        // Create & initialize the value to hold the temporary values to be used for comparisons & calculations.
+        double temporaryValueInRow = 0;
         
         // Loops through all of the elements of the row.
-        for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
+        for (NSUInteger colIndex = 1; colIndex < _n; colIndex++)
         {
             // Calculates the absolue value of the current column term in the row.
             temporaryValueInRow = fabs( [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] );
@@ -336,11 +342,3 @@
 }
 
 @end
-
-
-
-
-
-
-
-
