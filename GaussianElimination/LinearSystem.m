@@ -310,6 +310,13 @@
  */
 -(void)BackSubstitution
 {
+    // SAFETY: If the diagonal term for this row is considered "zero"
+    if ( [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue] < _LS_ZERO_THRESHOLD )
+    {
+        // Display error message to terminal and terminate the program.
+        NSLog(@"ERROR: Attempted to divide by zero during back substitution on the initial substitution!"); exit(0);
+    }
+    
     // Creates & initializes the X value to be used throughout for calculations.
     double xValue = [[_matrixB objectAtIndex:(_n-1)]doubleValue] / [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue];
     
@@ -326,6 +333,13 @@
         {
             // Calculates sum value using x-value obtained in previous step/loop.
             rowSum += [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:colIndex]doubleValue] * xValue;
+        }
+        
+        // SAFETY: If the diagonal term for this row is considered "zero"
+        if ( [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:rowIndex]doubleValue] < _LS_ZERO_THRESHOLD )
+        {
+            // Display error message to terminal and terminate the program.
+            NSLog(@"ERROR: Attempted to divide by zero during back substitution on the %lith step!",(long)rowIndex); exit(0);
         }
         
         // Calculates new x value for this row.
