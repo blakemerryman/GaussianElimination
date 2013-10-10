@@ -56,7 +56,6 @@
     {
         _matrixA = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix A
         _matrixB = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix B
-        _matrixX = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix X
         _LS_ZERO_THRESHOLD = 1 * pow(10, -6);       // Sets the linear system's "zero" threshold value.
         
         // SAFETY: If the first character of the file is not a valid positive integer, the message will return a value < 1...
@@ -146,7 +145,7 @@
 {
     printf("\n\nThis program saves the solutions to the desktop in \"soltions.txt\".");
 
-    [_matrixX writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
+    [_matrixB writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
 }
 
 /*
@@ -177,18 +176,6 @@
         printf(" %.4f\n", [[_matrixB objectAtIndex:row] doubleValue]);
     }
     
-    // Checks to make sure the Matrix X has objects inside before printing results.
-    if ([_matrixX count] > 0)
-    {
-        // Prints the content of MatrixX.
-        printf("\nMatrix X:\n");
-        
-        for (NSUInteger row = 0; row < _n; row++)
-        {
-            printf(" %.4f\n", [[_matrixX objectAtIndex:row] doubleValue] );
-        }
-        printf("\n");
-    }
 }
 
 #pragma mark - Private Interface Method Implementations
@@ -326,14 +313,14 @@
     if ( [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue] < _LS_ZERO_THRESHOLD )
     {
         // Display error message to terminal and terminate the program.
-        NSLog(@"ERROR: Attempted to divide by zero during back substitution on the initial substitution!"); exit(0);
+        NSLog(@"ERROR: Attempted to divide by zero during back substitution on the initial back-step"); exit(0);
     }
     
     // Creates & initializes the X value to be used throughout for calculations.
     double xValue = [[_matrixB objectAtIndex:(_n-1)]doubleValue] / [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue];
     
-    // Wraps double value in NSNumber object wrapper & adds it to the end of the array.
-    [_matrixX addObject:[NSNumber numberWithDouble:xValue]];
+    // Wraps double value in NSNumber object wrapper & begins replacing the values in matrix B starting with the last value.
+    [_matrixB replaceObjectAtIndex:(_n-1) withObject:[NSNumber numberWithDouble:xValue]];
     
     // Loops backward through the rest of the linear system to solve for the remain X-values.
     for (NSInteger rowIndex = (_n-2); rowIndex >= 0; rowIndex--)
@@ -357,8 +344,8 @@
         // Calculates new x value for this row.
         xValue = ([[_matrixB objectAtIndex:rowIndex]doubleValue] - rowSum) / [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:rowIndex]doubleValue];
         
-        // Wraps double value in NSNumber object wrapper & adds it to the beginning of the array, pushing the others down.
-        [_matrixX insertObject:[NSNumber numberWithDouble:xValue]atIndex:0];
+        // Wraps double value in NSNumber object wrapper & continues replacing the values of matrix B from last to first.
+        [_matrixB replaceObjectAtIndex:rowIndex withObject:[NSNumber numberWithDouble:xValue]];
     }
 }
 
