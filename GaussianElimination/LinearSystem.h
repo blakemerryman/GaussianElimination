@@ -11,7 +11,7 @@
 @interface LinearSystem : NSObject
 
 #pragma mark - Properties
-@property(nonatomic)double LS_ZERO_THRES;       // Stores the defined threshold value for which values below will be considered zero.
+@property(nonatomic)double LS_ZERO_THRESHOLD;   // Stores the defined threshold value for which values below will be considered zero.
 @property(nonatomic)NSUInteger n;               // The value of n will be stored here to be accessible by the rest of the object.
 @property(nonatomic)NSMutableArray* matrixA;    // The values of Matrix A will be stored here to be accessible by the rest of the object.
 @property(nonatomic)NSMutableArray* matrixB;    // The values of Matrix B will be stored here to be accessible by the rest of the object.

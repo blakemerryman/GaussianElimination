@@ -11,7 +11,7 @@
 #pragma mark - Private Interface Method Declarations
 @interface LinearSystem (PrivateMethods)
 
--(void)ScaleRowByLargestValueAt:(NSUInteger)rowIndex;      // Scales a row based upon the largest value in row.
+-(void)ScaleRowsByLargestValueAt:(NSUInteger)rowIndex;     // Scales a row based upon the largest value in row.
 -(NSUInteger)FindPivotElementForStep:(NSUInteger)step;     // Finds the location of the largest possible pivot element.
 -(void)ReduceRowsForStep:(NSUInteger)step;                 // Reduces the rows at step n.
 -(void)BackSubstitution;                                   // Back substitutes to find the values of Matrix X.
@@ -33,7 +33,7 @@
         _matrixA = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix A
         _matrixB = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix B
         _matrixX = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix X
-        _LS_ZERO_THRES = 0.0000001;                 // TODO: Sets the linear system's "zero" threshold value.
+        _LS_ZERO_THRESHOLD = pow(1, -6);            // Sets the linear system's "zero" threshold value.
     }
     return self;
 }
@@ -50,11 +50,11 @@
     // If the object initializes properly...
     if (self)
     {
-        // If the first character of the file is not a valid positive integer, the message will return a value < 1...
+        // SAFETY: If the first character of the file is not a valid positive integer, the message will return a value < 1...
         if ( [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue] < 1 )
         {
-            NSLog(@"ERROR: The n-value in the data file was not a valid entry.");   // Display error message to terminal.
-            exit(0);                                                                // Terminate the program.
+            // Display error message to terminal and terminate the program.
+            NSLog(@"ERROR: The n value in the data file was not a valid entry."); exit(0);
         }
 
         // Initialize the n-value for the linear system from the first line of the string.
@@ -103,14 +103,15 @@
 -(void)SolveLinearSystem
 {
     // Scales the each row of Matrix A by the largest value in that row.
-    for (NSUInteger rowIndex = 0; rowIndex < _n; rowIndex++)   {
-        [self ScaleRowByLargestValueAt:rowIndex];
+    for (NSUInteger rowIndex = 0; rowIndex < _n; rowIndex++)
+    {
+        [self ScaleRowsByLargestValueAt:rowIndex];
     }
     
     // For each step, this block will enact partial pivoting & row reduction to set up for solving by back substition.
     for (NSUInteger step = 0; step < _n-1; step++) // TODO: Should step < (_n-1) OR _n ???
     {
-        NSUInteger newPivotLocation = [self FindPivotElementForStep:step];                 // Returns the row index of best possible pivot location.
+        NSUInteger newPivotLocation = [self FindPivotElementForStep:step];          // Returns the row index of best possible pivot location.
         
         [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];   // Framework provided method that swaps the object indices (instead of contents).
         
@@ -180,52 +181,49 @@
 // TODO: Need to rework this so that it scales the row based upon the largest element in the ROW, not the whole matrix.
 -(void)ScaleRowByLargestValueAt:(NSUInteger)rowIndex
 {
+    double largestAbsoluteValueForRow = 0;  // Create & initialize the value to hold the current largest abs.val.
+    double temporaryValueInRow = 0;         // Create & initialize the value to hold the temporary values to be used for comparisons & calculations.
+    NSUInteger largestAbsValColIndex = 0;   // Create & initialize the value to hold the current largest abs.val.'s column index.
     
+    // Loops through all of the elements of the row.
+    for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
+    {
+        // Calculates the absolue value of the current column term in the row.
+        temporaryValueInRow = fabs( [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] );
+        
+        if (temporaryValueInRow > largestAbsoluteValueForRow)   // Checks if the temporary is larger than the largest. If so...
+        {
+            largestAbsoluteValueForRow = temporaryValueInRow;   // Update the largest value to be the temp. value.
+            largestAbsValColIndex = colIndex;                   // Update the largest's col index to be that of the temp value.
+        }
+    }
     
+    // SAFETY: If the largest value in the row is less than our defined "zero"...
+    if (largestAbsValColIndex < _LS_ZERO_THRESHOLD)
+    {
+        // Display error message to terminal & terminate program.
+        NSLog(@"ERROR: In Matrix A, Row %lu contains all zeros as defined by the program.",(unsigned long)rowIndex); exit(0);
+    }
     
-
+    // Calculates the row scaling factor.
+    double scalingFactor = fabs( 1 / [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:largestAbsValColIndex] doubleValue] );
     
-    
-    
-    
-//    double maxAbsoluteValue = 0.0;
-//    double tempAbsoluteValue;
-//    
-//    for (int row = 0; row < _n; row++)
-//    {
-//        for (int col = 0; col < _n; col++)
-//        {
-//            // Finds the absolute value of the next element in the column below the pivot element.
-//            tempAbsoluteValue = fabs([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue]);
-//            
-//            // Compares the current largestAbs.Val. with the current indexed value.
-//            if (tempAbsoluteValue > maxAbsoluteValue)
-//            {
-//                maxAbsoluteValue = tempAbsoluteValue;  // Assigns new largest absolute value.
-//            }
-//            
-//        }
-//    }
-//    
-//    // Error code prints if row max-value is less than 0.000001.
-//    if (maxAbsoluteValue > pow(1, -6) ) { printf("ERROR: ROW CONTAINS ONLY ZEROS!"); }
-//    
-//    // Calculates the matrix scaling factor.
-//    double scalingFactor = fabs(1/maxAbsoluteValue);
-//    
-//    // Scales the matrices A & B.
-//    for (int row = 0; row < _n; row++)
-//    {
-//        for (int col = 0; col < _n; col++)
-//        {
-//            // Scales the indexed element of matrix A.
-//            [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:([[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * scalingFactor)]];
-//        }
-//        
-//        // Scales the indexed element of matrix B.
-//        [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:([[_matrixB objectAtIndex:row]doubleValue]*scalingFactor)]];
-//    }
-
+    // Loops through all values in the row.
+    for (NSUInteger colIndex = 0; colIndex < _n; colIndex++)
+    {
+        /* FOR MATRIX A (current row) */
+        // Calculates the newly scaled value at current column index for row.
+        temporaryValueInRow = [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] * scalingFactor;
+        // Replaces the original value with newly scaled value at given current column index for row.
+        [[_matrixA objectAtIndex:rowIndex] replaceObjectAtIndex:colIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
+        
+        // ASK - Do we need to scale the given row in B as well ???
+        /* FOR MATRIX B (current row) */
+        // Calculates the newly scaled value at current row index.
+        temporaryValueInRow = [[_matrixB objectAtIndex:rowIndex] doubleValue] * scalingFactor;
+        // Replaces the original value with newly scaled value at current row index for row.
+        [_matrixB replaceObjectAtIndex:rowIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
+    }
 }
 
 /*
@@ -273,12 +271,14 @@
         {
             // Calculates new row-reduced value for current element.
             newValue = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] - multiplier * [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue];
+            
             // Replaces the current element with the new value.
             [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:newValue]];
         }
         
         // Calculates the new row value of matrix B.
         newValue = [[_matrixB objectAtIndex:row]doubleValue] - multiplier * [[_matrixB objectAtIndex:step]doubleValue];
+        
         // Replaces the current element with the new value.
         [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:newValue]];
     }
@@ -290,26 +290,32 @@
  */
 -(void)BackSubstitution
 {
-    double xValue;      // X value to be used throughout for calculations.
+    // X value to be used throughout for calculations.
+    double xValue;
     
-    // Calculates & stores the last X-value in the matrix X.
+    // Calculates the final X-value in the matrix X.
     xValue = [[_matrixB objectAtIndex:(_n-1)]doubleValue] / [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue];
+    
+    // Wraps double value in NSNumber object wrapper & adds it to the end of the array.
     [_matrixX addObject:[NSNumber numberWithDouble:xValue]];
     
     // Loops backward through the rest of the linear system to solve for the remain X-values.
     for (NSUInteger row = (_n-2); row <= 0; --row)
     {
-        // Stores the sum of values for each row.
+        // Stores the running sum of values for each row.
         double rowSum = 0.0;
         
+        // Loops through the values in the row to the right of the current step.
         for (NSUInteger col = (row+1); col < _n; col++)
         {
-            // Calculates value using x-value obtained in previous step/loop.
+            // Calculates sum value using x-value obtained in previous step/loop.
             rowSum += [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * xValue;
         }
         
-        // Calculates & stores new x-value for this row.
+        // Calculates new x value for this row.
         xValue = ([[_matrixB objectAtIndex:row]doubleValue] - rowSum) / [[[_matrixA objectAtIndex:row]objectAtIndex:row]doubleValue];
+        
+        // Wraps double value in NSNumber object wrapper & adds it to the beginning of the array, pushing the others down.
         [_matrixX insertObject:[NSNumber numberWithDouble:xValue]atIndex:0];
     }
 }
