@@ -62,7 +62,7 @@
         _n = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue];
         
         // Allocates & initializes an empty array of rowValues.
-        NSMutableArray *rowOfValues = [[NSMutableArray alloc] init];
+        NSMutableArray *rowOfValues = [[NSMutableArray alloc] initWithCapacity:0];
         
         // Creates & initializes value to hold parsed row elements.
         double rowElement = 0;
@@ -87,10 +87,10 @@
                 [rowOfValues addObject:[NSNumber numberWithDouble: rowElement]];
                 
                 // Repurposes rowElement to retrieve & store the values for B in the same manner as for the rowOfValues array.
-                //rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:(_n+1)]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
+                rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:(_n+1)]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
                 
                 // Wraps double value in NSNumber object wrapper & adds it to the end of the array B.
-                //[_matrixB addObject:[NSNumber numberWithDouble:rowElement]];
+                [_matrixB addObject:[NSNumber numberWithDouble:rowElement]];
             }
             // Adds row of values to the matrix B.
             [_matrixA addObject:[rowOfValues mutableCopy]];
@@ -137,10 +137,7 @@
 -(void)SaveSolutionToFile
 {
     printf("\n\nThis program saves the solutions to the desktop in \"soltions.txt\".");
-    
-    
-    
-    
+
     [_matrixX writeToFile:@"/Users/blakemerryman/Desktop/solution.txt" atomically:NO];
 }
 
@@ -156,9 +153,9 @@
     // Prints the content of MatrixA.
     printf("Matrix A:\n");
     
-    for (int row = 0; row < _n; row++)
+    for (NSUInteger row = 0; row < _n; row++)
     {
-        for (int col = 0; col < _n; col++)
+        for (NSUInteger col = 0; col < _n; col++)
         {
             printf(" %.4f", [[[_matrixA objectAtIndex:row] objectAtIndex:col] doubleValue] );
         }
@@ -176,7 +173,7 @@
     if ([_matrixX count] > 0) {
         // Prints the content of MatrixX.
         printf("\nMatrix X:\n");
-        for (int row = 0; row < _n; row++)
+        for (NSUInteger row = 0; row < _n; row++)
         {
             printf(" %.4f\n", [[_matrixX objectAtIndex:row] doubleValue]);
         }
