@@ -175,7 +175,6 @@
     {
         printf(" %.4f\n", [[_matrixB objectAtIndex:row] doubleValue]);
     }
-    
 }
 
 #pragma mark - Private Interface Method Implementations
