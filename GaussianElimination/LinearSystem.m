@@ -79,14 +79,18 @@
                  */
                 double rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:row]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
                 
-                // Wraps each double value in NSNumber object wrapper & adds it to the end of the array.
+                // Wraps double value in NSNumber object wrapper & adds it to the end of the array of row values.
                 [rowOfValues addObject:[NSNumber numberWithDouble: rowElement]];
+                
+                // Repurposes rowElement to retrieve & store the values for B in the same manner as for the rowOfValues array.
+                rowElement = [[[[[stringContents componentsSeparatedByString:@"/n"]objectAtIndex:(_n+1)]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
+                
+                // Wraps double value in NSNumber object wrapper & adds it to the end of the array B.
+                [_matrixB addObject:[NSNumber numberWithDouble:rowElement]];
             }
-            // Adds row of values to the MatrixA.
+            // Adds row of values to the matrix B.
             [_matrixA addObject:[rowOfValues mutableCopy]];
         }
-        // Initializes the Matrix B for the linear system from the n+1st row of the string.
-        _matrixB = [[[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:_n+1] componentsSeparatedByString:@" "] mutableCopy];
     }
     return self;
 }
