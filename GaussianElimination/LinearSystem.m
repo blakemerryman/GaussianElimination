@@ -8,13 +8,13 @@
 
 #import "LinearSystem.h"
 
-#pragma mark - Private Interface Methods
+#pragma mark - Private Interface Method Declarations
 @interface LinearSystem (PrivateMethods)
 
--(void) ScaleRowByLargestValueAt:(int)rowIndex;  // Scales a row based upon the largest value in row.
--(int)  FindPivotElementForStep:(int)step;       // Finds the location of the largest possible pivot element.
--(void) ReduceRowsForStep:(int)step;             // Reduces the rows at step n.
--(void) BackSubstitution;                        // Back substitutes to find the values of Matrix X.
+-(void)ScaleRowByLargestValueAt:(NSUInteger)rowIndex;      // Scales a row based upon the largest value in row.
+-(NSUInteger)FindPivotElementForStep:(NSUInteger)step;     // Finds the location of the largest possible pivot element.
+-(void)ReduceRowsForStep:(NSUInteger)step;                 // Reduces the rows at step n.
+-(void)BackSubstitution;                                   // Back substitutes to find the values of Matrix X.
 
 @end
 
@@ -29,12 +29,11 @@
 -(id)init
 {
     self = [super init];
-    if (self) {
-        // Allocates memory & initializes the matrices A, B, X, & zero threshold value..
-        _matrixA = [[NSMutableArray alloc] init];
-        _matrixB = [[NSMutableArray alloc] init];
-        _matrixX = [[NSMutableArray alloc] initWithCapacity:0];
-        _LS_ZERO_THRES = 0.000001; // TODO: Need to standardize this & put in exponential form ???
+    if (self){
+        _matrixA = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix A
+        _matrixB = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix B
+        _matrixX = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix X
+        _LS_ZERO_THRES = 0.0000001;                 // TODO: Sets the linear system's "zero" threshold value.
     }
     return self;
 }
@@ -46,31 +45,49 @@
  */
 -(id)initWithContentsOfString:(NSString *) stringContents
 {
-    self = [super init];
+    self = [super init];    // Call default initializer method.
     
+    // If the object initializes properly...
     if (self)
     {
-        // Initializes the n-value for the linear system from the first line of the string.
+        // If the first character of the file is not a valid positive integer, the message will return a value < 1...
+        if ( [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue] < 1 )
+        {
+            NSLog(@"ERROR: The n-value in the data file was not a valid entry.");   // Display error message to terminal.
+            exit(0);                                                                // Terminate the program.
+        }
+
+        // Initialize the n-value for the linear system from the first line of the string.
         _n = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue];
         
-        // Initializes the Matrix A for the linear system from the next n-rows of the string.
-        for (int i = 1; i <= _n; i++)
+        // Allocates & initializes an empty array of rowValues.
+        NSMutableArray *rowOfValues = [[NSMutableArray alloc] init];
+        
+        // Fills the Matrix A with arrays of row values (after finding them, of course).
+        for (NSUInteger row = 1; row <= _n; row++)
         {
-            // Allocates & initializes (default value) a NSArray of rowValues.
-            NSArray *rowOfValues = [[NSArray alloc] init];
-            
-            // Parses & extracts string values at ith row of stringContents and converts them to doubles. Stores in array of row values.
-            // TODO: Need to convert to doubles.
-            rowOfValues = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:i] componentsSeparatedByString:@" "];
-            
-            // Adds row of doubles to the MatrixA.
+            // Parses & extracts values down the length of each row.
+            for (NSUInteger col = 0; col < _n; col++)
+            {
+                /*  DESCRIPTION:
+                 *  This line of code does quite a bit. Reading from the inner brackets out:
+                 *      1. Creates an array where each element is a line of the data file string (from index 1 to n).
+                 *      2. Returns the element (line of data file) held at the index "row".
+                 *      3. Creates a new array where each element is a single entry/number from the line of data.
+                 *      4. Returns the element (entry from line) held at the index "col".
+                 *      5. Returns the double value for the element to be stored in the double rowElement.
+                 */
+                double rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:row]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
+                
+                // Wraps each double value in NSNumber object wrapper & adds it to the end of the array.
+                [rowOfValues addObject:[NSNumber numberWithDouble: rowElement]];
+            }
+            // Adds row of values to the MatrixA.
             [_matrixA addObject:[rowOfValues mutableCopy]];
         }
-        
         // Initializes the Matrix B for the linear system from the n+1st row of the string.
         _matrixB = [[[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:_n+1] componentsSeparatedByString:@" "] mutableCopy];
     }
-    
     return self;
 }
 
@@ -82,14 +99,14 @@
 -(void)SolveLinearSystem
 {
     // Scales the each row of Matrix A by the largest value in that row.
-    for (int rowIndex = 0; rowIndex < _n; rowIndex++)   {
+    for (NSUInteger rowIndex = 0; rowIndex < _n; rowIndex++)   {
         [self ScaleRowByLargestValueAt:rowIndex];
     }
     
     // For each step, this block will enact partial pivoting & row reduction to set up for solving by back substition.
-    for (int step = 0; step < _n-1; step++) // TODO: Should step < (_n-1) OR _n ???
+    for (NSUInteger step = 0; step < _n-1; step++) // TODO: Should step < (_n-1) OR _n ???
     {
-        int newPivotLocation = [self FindPivotElementForStep:step];                 // Returns the row index of best possible pivot location.
+        NSUInteger newPivotLocation = [self FindPivotElementForStep:step];                 // Returns the row index of best possible pivot location.
         
         [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];   // Framework provided method that swaps the object indices (instead of contents).
         
@@ -116,7 +133,7 @@
 -(void)PrintLinearSystem
 {
     // Prints the value of N.
-    printf("\nN is %i\n", _n);
+    printf("\nN is %lu\n", (unsigned long)_n);
     
     // Prints the content of MatrixA.
     printf("\nMatrix A:\n");
@@ -157,7 +174,7 @@
  This method scales the linear system to assist in reducing progation of round off error.
  */
 // TODO: Need to rework this so that it scales the row based upon the largest element in the ROW, not the whole matrix.
--(void)ScaleRowByLargestValueAt:(int)rowIndex
+-(void)ScaleRowByLargestValueAt:(NSUInteger)rowIndex
 {
     
     
@@ -211,15 +228,15 @@
  METHOD: FindPivotForStep
  This private method returns the location of the largest absolute value element in the column at or below the current pivot element.
  */
--(int)FindPivotElementForStep:(int)step
+-(NSUInteger)FindPivotElementForStep:(NSUInteger)step
 {
     // Creates pivot location & inits with step count.
-    int pivotLocation = step;
+    NSUInteger pivotLocation = step;
     
     // Creates largest value & inits with current value at step.
     double largestPivotValue = fabs( [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue] );
     
-    for (int row = step+1; row < _n; row++)
+    for (NSUInteger row = step+1; row < _n; row++)
     {
         // Finds the absolute value of the next element in the column below the pivot element.
         double temporaryAbsoluteValue = fabs( [[[_matrixA objectAtIndex:row] objectAtIndex:step] doubleValue] );
@@ -239,16 +256,16 @@
  METHOD: ReduceRowForStep
  This method performs the row reduction for each step.
  */
--(void)ReduceRowForStep:(int)step
+-(void)ReduceRowForStep:(NSUInteger)step
 {
     double newValue; // To be used for temporary storage of newly calculate values.
     
-    for (int row = step+1; row < _n; row ++)
+    for (NSUInteger row = step+1; row < _n; row ++)
     {
         // Calculates the multiplier value.
         double multiplier = [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue] / [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue];
         
-        for (int col = step; col < _n; col++)
+        for (NSUInteger col = step; col < _n; col++)
         {
             // Calculates new row-reduced value for current element.
             newValue = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] - multiplier * [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue];
@@ -276,12 +293,12 @@
     [_matrixX addObject:[NSNumber numberWithDouble:xValue]];
     
     // Loops backward through the rest of the linear system to solve for the remain X-values.
-    for (int row = (_n-2); row >= 0; --row)
+    for (NSUInteger row = (_n-2); row <= 0; --row)
     {
         // Stores the sum of values for each row.
         double rowSum = 0.0;
         
-        for (int col = (row+1); col < _n; col++)
+        for (NSUInteger col = (row+1); col < _n; col++)
         {
             // Calculates value using x-value obtained in previous step/loop.
             rowSum += [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * xValue;

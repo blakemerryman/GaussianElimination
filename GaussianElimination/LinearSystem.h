@@ -12,7 +12,7 @@
 
 #pragma mark - Properties
 @property(nonatomic)double LS_ZERO_THRES;       // Stores the defined threshold value for which values below will be considered zero.
-@property(nonatomic)int n;                      // The value of n will be stored here to be accessible by the rest of the object.
+@property(nonatomic)NSUInteger n;               // The value of n will be stored here to be accessible by the rest of the object.
 @property(nonatomic)NSMutableArray* matrixA;    // The values of Matrix A will be stored here to be accessible by the rest of the object.
 @property(nonatomic)NSMutableArray* matrixB;    // The values of Matrix B will be stored here to be accessible by the rest of the object.
 @property(nonatomic)NSMutableArray* matrixX;    // The values of Matrix X will be stored here to be accessible by the rest of the object.
