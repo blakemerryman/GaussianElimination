@@ -3,7 +3,15 @@
 //  GaussianElimination
 //
 //  Created by Blake Merryman on 10/4/13.
-//  Copyright (c) 2013 Blake Merryman. All rights reserved.
+//  Middle Tennessee State University, MATH 4310, Programming Assignment 1
+//  Due by Thursday, 10 October 2013.
+//
+//  Description of Program:
+//  This is a command line tool designed to receive a nxn linear system of equations, Ax=b, from user
+//  provided text file and solve the system using the method of Gaussian Elimination with Scaled
+//  Partial Pivoting. There are built in safety checks to ensure that the matrix is invertible.
+//  Error messages will display in the terminal if the matrix is singular. After solving, the
+//  answer is saved to a text file on the desktop.
 //
 
 #import "LinearSystem.h"
@@ -19,8 +27,8 @@
 @end
 
 
-@implementation LinearSystem
 #pragma mark - Public Interface Method Implementations
+@implementation LinearSystem
 
 /*
  METHOD: init
@@ -30,7 +38,7 @@
 -(id)init
 {
     self = [super init];
-    if (self){ /*  */ }
+    if (self){ /* Default init stub. */ }
     return self;
 }
 
@@ -109,17 +117,17 @@
     // Scales the rows of the linear system by the largest absolute value in each row.
     [self ScaleRowsByLargestAbsoluteValueInRow];
     
-    // Creates & initializes value to hold newPivot location.
-    NSUInteger newPivotLocation = 0;
+    // Creates & initializes value to hold current pivot element row index location.
+    NSUInteger pivotElementRowIndexForCurrentStep = 0;
     
     // Loops through the steps of the matrix in the solving process...
     for (NSUInteger step = 0; step < _n; step++)
     {
         // Returns the row index of best possible pivot location.
-        newPivotLocation = [self FindPivotElementForStep:step];
+        pivotElementRowIndexForCurrentStep = [self FindPivotElementForStep:step];
         
         // Framework provided method that swaps the object indices (instead of object contents).
-        [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:newPivotLocation];
+        [_matrixA exchangeObjectAtIndex:step withObjectAtIndex:pivotElementRowIndexForCurrentStep];
         
         // Reduce rows at current step.
         [self ReduceRowsForStep:step];
@@ -214,7 +222,7 @@
         if (largestAbsValColIndex < _LS_ZERO_THRESHOLD)
         {
             // Display error message to terminal & terminate program.
-            NSLog(@"ERROR: In Matrix A, Row %lu contains all zeros as defined by the program.",(unsigned long)rowIndex); exit(0);
+            NSLog(@"ERROR: In Matrix A, Row %lu contains all zeros (as defined by the program). Matrix is singular.",(unsigned long)rowIndex); exit(0);
         }
         
         // Calculates the row scaling factor.
@@ -268,7 +276,7 @@
     if (largestAbsoluteValueForColumn < _LS_ZERO_THRESHOLD)
     {
         // Display error message to terminal & terminate program.
-        NSLog(@"ERROR: In Matrix A, Column %lu contains all zeros as defined by the program.",(unsigned long)pivotIndex); exit(0);
+        NSLog(@"ERROR: In Matrix A, Column %lu contains all zeros (as defined by the program) at or below pivot. Matrix A is singular.",(unsigned long)pivotIndex); exit(0);
     }
     
     return pivotIndex;
@@ -282,12 +290,16 @@
 {
     double newValue; // To be used for temporary storage of newly calculate values.
     
-    for (NSUInteger row = step+1; row < _n; row ++)
+    for (NSUInteger row = (step+1); row < _n; row ++)
     {
         // Calculates the multiplier value.
         double multiplier = [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue] / [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue];
         
-        for (NSUInteger col = step; col < _n; col++)
+        // Fill in value directly below pivot with zero.
+        [[_matrixA objectAtIndex:row] replaceObjectAtIndex:step withObject:[NSNumber numberWithDouble:0.0]];
+        
+        // Loops through the remaining elements in the row...
+        for (NSUInteger col = (step+1); col < _n; col++)
         {
             // Calculates new row-reduced value for current element.
             newValue = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] - multiplier * [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue];
