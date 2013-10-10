@@ -30,12 +30,7 @@
 -(id)init
 {
     self = [super init];
-    if (self){
-        _matrixA = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix A
-        _matrixB = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix B
-        _matrixX = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix X
-        _LS_ZERO_THRESHOLD = pow(1, -6);            // Sets the linear system's "zero" threshold value.
-    }
+    if (self){ /*  */ }
     return self;
 }
 
@@ -51,6 +46,11 @@
     // If the object initializes properly...
     if (self)
     {
+        _matrixA = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix A
+        _matrixB = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix B
+        _matrixX = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix X
+        _LS_ZERO_THRESHOLD = 1 * pow(10, -6);       // Sets the linear system's "zero" threshold value.
+        
         // SAFETY: If the first character of the file is not a valid positive integer, the message will return a value < 1...
         if ( [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue] < 1 )
         {
@@ -61,15 +61,15 @@
         // Initialize the n-value for the linear system from the first line of the string.
         _n = [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue];
         
-        // Allocates & initializes an empty array of rowValues.
-        NSMutableArray *rowOfValues = [[NSMutableArray alloc] initWithCapacity:0];
-        
-        // Creates & initializes value to hold parsed row elements.
-        double rowElement = 0;
-        
         // Fills the Matrix A with arrays of row values (after finding them, of course).
         for (NSUInteger row = 1; row <= _n; row++)
         {
+            // Allocates & initializes an empty array of rowValues.
+            NSMutableArray *rowOfValues = [[NSMutableArray alloc] initWithCapacity:0];
+            
+            // Creates & initializes value to hold parsed row elements.
+            double rowElement = 0.0;
+            
             // Parses & extracts values down the length of each row.
             for (NSUInteger col = 0; col < _n; col++)
             {
@@ -79,21 +79,21 @@
                  *      2. Returns the element (line of data file) held at the index "row".
                  *      3. Creates a new array where each element is a single entry/number from the line of data.
                  *      4. Returns the element (entry from line) held at the index "col".
-                 *      5. Returns the double value for the element to be stored in the double rowElement.
+                 *      5. Returns the double value of the element at the index.
                  */
                 rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:row]componentsSeparatedByString:@" "]objectAtIndex:col] doubleValue];
                 
-                // Wraps double value in NSNumber object wrapper & adds it to the end of the array of row values.
-                [rowOfValues addObject:[NSNumber numberWithDouble: rowElement]];
-                
-                // Repurposes rowElement to retrieve & store the values for B in the same manner as for the rowOfValues array.
-                rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:(_n+1)]componentsSeparatedByString:@" "]objectAtIndex:col]doubleValue];
-                
-                // Wraps double value in NSNumber object wrapper & adds it to the end of the array B.
-                [_matrixB addObject:[NSNumber numberWithDouble:rowElement]];
+                // Wraps double value in NSNumber object wrapper & adds it to the end of the array A.
+                [rowOfValues addObject: [NSNumber numberWithDouble:rowElement]];
             }
             // Adds row of values to the matrix B.
-            [_matrixA addObject:[rowOfValues mutableCopy]];
+            [_matrixA insertObject:rowOfValues atIndex:(row-1)];
+            
+            // Repurposes rowElement to retrieve & store the values for B in the same manner as for the rowOfValues array.
+            rowElement = [[[[[stringContents componentsSeparatedByString:@"\n"]objectAtIndex:(_n+1)]componentsSeparatedByString:@" "]objectAtIndex:(row-1)]doubleValue];
+            
+            // Wraps double value in NSNumber object wrapper & adds it to the end of the array B.
+            [_matrixB addObject:[NSNumber numberWithDouble:rowElement]];
         }
     }
     return self;
@@ -170,14 +170,15 @@
     }
     
     // Checks to make sure the Matrix X has objects inside before printing results.
-    if ([_matrixX count] > 0) {
+    if ([_matrixX count] > 0)
+    {
         // Prints the content of MatrixX.
         printf("\nMatrix X:\n");
+        
         for (NSUInteger row = 0; row < _n; row++)
         {
-            printf(" %.4f\n", [[_matrixX objectAtIndex:row] doubleValue]);
+            printf(" %.4f\n", [[_matrixX objectAtIndex:row] doubleValue] );
         }
-        
         printf("\n");
     }
 }
@@ -227,14 +228,13 @@
             temporaryValueInRow = [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:colIndex] doubleValue] * scalingFactor;
             // Replaces the original value with newly scaled value at given current column index for row.
             [[_matrixA objectAtIndex:rowIndex] replaceObjectAtIndex:colIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
-            
-            // ASK - "For partial scaling, do we need to scale the given row in B as well?"
-            /* FOR MATRIX B (current row) */
-            // Calculates the newly scaled value at current row index.
-            temporaryValueInRow = [[_matrixB objectAtIndex:rowIndex] doubleValue] * scalingFactor;
-            // Replaces the original value with newly scaled value at current row index for row.
-            [_matrixB replaceObjectAtIndex:rowIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
         }
+
+        /* FOR MATRIX B (current row) */
+        // Calculates the newly scaled value at current row index.
+        temporaryValueInRow = [[_matrixB objectAtIndex:rowIndex] doubleValue] * scalingFactor;
+        // Replaces the original value with newly scaled value at current row index for row.
+        [_matrixB replaceObjectAtIndex:rowIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
     }
 }
 
@@ -268,7 +268,7 @@
     if (largestAbsoluteValueForColumn < _LS_ZERO_THRESHOLD)
     {
         // Display error message to terminal & terminate program.
-        NSLog(@"ERROR: In Matrix A, C %lu contains all zeros as defined by the program.",(unsigned long)pivotIndex); exit(0);
+        NSLog(@"ERROR: In Matrix A, Column %lu contains all zeros as defined by the program.",(unsigned long)pivotIndex); exit(0);
     }
     
     return pivotIndex;
@@ -310,30 +310,26 @@
  */
 -(void)BackSubstitution
 {
-    // X value to be used throughout for calculations.
-    double xValue;
-    
-    // Calculates the final X-value in the matrix X.
-    xValue = [[_matrixB objectAtIndex:(_n-1)]doubleValue] / [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue];
+    // Creates & initializes the X value to be used throughout for calculations.
+    double xValue = [[_matrixB objectAtIndex:(_n-1)]doubleValue] / [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue];
     
     // Wraps double value in NSNumber object wrapper & adds it to the end of the array.
     [_matrixX addObject:[NSNumber numberWithDouble:xValue]];
     
     // Loops backward through the rest of the linear system to solve for the remain X-values.
-    for (NSUInteger row = (_n-2); row <= 0; --row)
+    for (NSInteger rowIndex = (_n-2); rowIndex >= 0; rowIndex--)
     {
-        // Stores the running sum of values for each row.
-        double rowSum = 0.0;
+        double rowSum = 0.0;    // Creates & initializes the row's running sum to zero.
         
         // Loops through the values in the row to the right of the current step.
-        for (NSUInteger col = (row+1); col < _n; col++)
+        for (NSUInteger colIndex = (rowIndex+1); colIndex < _n; colIndex++)
         {
             // Calculates sum value using x-value obtained in previous step/loop.
-            rowSum += [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] * xValue;
+            rowSum += [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:colIndex]doubleValue] * xValue;
         }
         
         // Calculates new x value for this row.
-        xValue = ([[_matrixB objectAtIndex:row]doubleValue] - rowSum) / [[[_matrixA objectAtIndex:row]objectAtIndex:row]doubleValue];
+        xValue = ([[_matrixB objectAtIndex:rowIndex]doubleValue] - rowSum) / [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:rowIndex]doubleValue];
         
         // Wraps double value in NSNumber object wrapper & adds it to the beginning of the array, pushing the others down.
         [_matrixX insertObject:[NSNumber numberWithDouble:xValue]atIndex:0];
