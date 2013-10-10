@@ -30,7 +30,6 @@
 -(id)init;                                              // Default initializer required by objective c.
 -(id)initWithContentsOfString:(NSString *)fileContents; // Custom initializer that inits with content of string.
 -(void)SolveLinearSystem;                               // Solves the linear system of equations.
--(void)PrintLinearSystem;                               // Prints the linear system of equations.
 -(void)SaveSolutionToFile;                              // Saves the solution, replaced contents of matrixB, to a file.
 
 @end

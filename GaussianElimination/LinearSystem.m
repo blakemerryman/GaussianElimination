@@ -164,35 +164,6 @@
                         error:nil];
 }
 
-/*
- METHOD: PrintLinearSystem
- This method prints the contents of the linear system (n, matrix A, & matrix B) to the command line.
- */
--(void)PrintLinearSystem
-{
-    // Prints the value of N.
-    printf("\nN is %lu\n", (unsigned long)_n);
-    
-    // Prints the content of MatrixA.
-    printf("Matrix A:\n");
-    
-    for (NSUInteger row = 0; row < _n; row++)
-    {
-        for (NSUInteger col = 0; col < _n; col++)
-        {
-            printf(" %.4f", [[[_matrixA objectAtIndex:row] objectAtIndex:col] doubleValue] );
-        }
-        printf("\n");
-    }
-    
-    // Prints the content of MatrixB.
-    printf("Matrix B:\n");
-    for (int row = 0; row < _n; row++)
-    {
-        printf(" %.4f\n", [[_matrixB objectAtIndex:row] doubleValue]);
-    }
-}
-
 #pragma mark - Private Interface Method Implementations
 
 /*

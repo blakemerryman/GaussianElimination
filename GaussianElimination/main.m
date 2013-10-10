@@ -31,19 +31,6 @@ void displayIntroductionMessage(void)
     printf("\nThis is a command line tool designed to receive a nxn linear system of equations, Ax=b, from user\nprovided text file and solve the system using the method of Gaussian Elimination with Scaled\nPartial Pivoting. There are built in safety checks to ensure that the matrix is invertible.\nError messages will display below if the matrix is singular. After solving, the\nanswer is saved to a text file on the desktop.\n\n");
 }
 
-/*
- FUNCTION: debugPrintStatement
- This function displays the content of the linear system if the debugging feature of the project is turned on (set to 1). Otherwise, nothing occurs.
- */
-void debugPrintStatement(LinearSystem *MyLinearSystem)
-{
-    int dEBUG = 0;
-    if (dEBUG == 1)
-    {
-        [MyLinearSystem PrintLinearSystem];
-    }
-}
-
 /* ----------------------------------- *
  * ---------- MAIN FUNCTION ---------- *
  * ----------------------------------- */
@@ -62,12 +49,8 @@ int main(int argc, const char * argv[])
         // Creates new instance of LinearSystem object and initializes it with contents of the file.
         LinearSystem *MyLinearSystem = [[LinearSystem alloc] initWithContentsOfString:dataFileContents];
         
-        debugPrintStatement(MyLinearSystem);    // DEBUGGING: See function decription.
-        
         [MyLinearSystem SolveLinearSystem];     // Solve linear system by Gaussian elimination using scaled partial pivoting.
-        
-        debugPrintStatement(MyLinearSystem);    // DEBUGGING: See function decription.
-        
+                
         [MyLinearSystem SaveSolutionToFile];    // Saves the solution to file.
     
     } // END MEMORY MANAGEMENT BLOCK.
