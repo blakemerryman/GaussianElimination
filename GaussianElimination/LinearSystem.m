@@ -274,30 +274,27 @@
     
     for (NSUInteger row = (step+1); row < _n; row ++)
     {
-        currentRowElement = [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue];  // The current row's value beneath the pivot.
-        pivotRowElement   = [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue]; // The current step's value for the pivot element.
-        double multiplier = currentRowElement / pivotRowElement;                            // Calculates multiplier for row reduction.
-        
-        // Fill in value below pivot with zero for current row.
-        [[_matrixA objectAtIndex:row] replaceObjectAtIndex:step withObject:[NSNumber numberWithDouble:0.0]];
+        currentRowElement = [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue];      // The current row's value beneath the pivot.
+        pivotRowElement   = [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue];     // The current step's value for the pivot element.
+        double multiplier = currentRowElement / pivotRowElement;                                // Calculates multiplier for row reduction.
+        [[_matrixA objectAtIndex:row] replaceObjectAtIndex:step
+                                                withObject:[NSNumber numberWithDouble:0.0]];    // Fill in value below pivot with zero for current row.
         
         // Loops through the remaining elements in the row...
         for (NSUInteger col = (step+1); col < _n; col++)
         {
-            double currentRowElement = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue];  // The current row's element for current column
-            double pivotRowElement   = [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue]; // The pivot row's element for current column.
-            newValue = currentRowElement - multiplier * pivotRowElement;                              // Calculates new row-reduced value for current element.
-            
-            // Replaces the current element with the new value.
-            [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:newValue]];
+            double currentRowElement = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue];    // The current row's element for current column
+            double pivotRowElement   = [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue];   // The pivot row's element for current column.
+            newValue = currentRowElement - multiplier * pivotRowElement;                                // Calculates new row-reduced value for current element.
+            [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col
+                                                   withObject:[NSNumber numberWithDouble:newValue]];    // Replaces the current element with the new value.
         }
         
-        currentRowElement = [[_matrixB objectAtIndex:row]doubleValue];  // The current row's b value.
-        pivotRowElement   = [[_matrixB objectAtIndex:step]doubleValue]; // The pivot row's b value.
-        newValue = currentRowElement - multiplier * pivotRowElement;    // Calculates new b value for current row.
-        
-        // Replaces the current element with the new value.
-        [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:newValue]];
+        currentRowElement = [[_matrixB objectAtIndex:row]doubleValue];           // The current row's b value.
+        pivotRowElement   = [[_matrixB objectAtIndex:step]doubleValue];          // The pivot row's b value.
+        newValue = currentRowElement - multiplier * pivotRowElement;             // Calculates new b value for current row.
+        [_matrixB replaceObjectAtIndex:row
+                            withObject:[NSNumber numberWithDouble:newValue]];    // Replaces the current element with the new value.
     }
 }
 
