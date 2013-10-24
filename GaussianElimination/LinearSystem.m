@@ -56,7 +56,7 @@
     {
         _matrixA = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix A
         _matrixB = [[NSMutableArray alloc] init];   // Allocates memory & initializes the matrix B
-        _LS_ZERO_THRESHOLD = 1 * pow(10, -6);       // Sets the linear system's "zero" threshold value.
+        _LS_ZERO_THRESHOLD = 1 * pow(10, -10);       // Sets the linear system's "zero" threshold value.
         
         // SAFETY: If the first character of the file is not a valid positive integer, the message will return a value < 1...
         if ( [[[stringContents componentsSeparatedByString:@"\n"] objectAtIndex:0] intValue] < 1 )
@@ -176,7 +176,7 @@
     for (NSUInteger rowIndex = 0; rowIndex < _n; rowIndex++)
     {
         // Creates & intializes the largest abs.val. to be the first value in the row.
-        double largestAbsoluteValueForRow = fabs([[[_matrixA objectAtIndex:rowIndex] objectAtIndex:rowIndex] doubleValue]);
+        double largestAbsoluteValueForRow = fabs([[[_matrixA objectAtIndex:rowIndex] objectAtIndex:0] doubleValue]);
         
         // Create & initialize the largest abs.val.'s row col.index to be the first element in row.
         NSUInteger largestAbsValColIndex = 0;
@@ -220,9 +220,11 @@
         /* FOR MATRIX B (current row) */
         // Calculates the newly scaled value at current row index.
         temporaryValueInRow = [[_matrixB objectAtIndex:rowIndex] doubleValue] * scalingFactor;
+        
         // Replaces the original value with newly scaled value at current row index for row.
         [_matrixB replaceObjectAtIndex:rowIndex withObject:[NSNumber numberWithDouble:temporaryValueInRow]];
     }
+    
 }
 
 /*
@@ -231,22 +233,21 @@
  */
 -(NSUInteger)FindPivotElementForStep:(NSUInteger)step
 {
-    NSUInteger pivotIndex = step;               // Creates & initializes (with step) the value to hold the current column's best pivot row-index.
-    double largestAbsoluteValueForColumn = 0;   // Creates & initializes the value to hold the largestAbs.Val. for the column.
-    double temporateColumnValue = 0;            // Creates & initializes the value to hold temporary values for comparisons & calculations.
+    // Creates & initializes the value to be the abs.val. of the current pivot element.
+    double largestAbsoluteValueForColumn = fabs( [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue] );
     
-    // Sets largestAbs.Val.ForCol. to be the abs.val. of the current pivot element.
-    largestAbsoluteValueForColumn = fabs( [[[_matrixA objectAtIndex:step] objectAtIndex:step] doubleValue] );
+    double temporaryColumnValue = 0;    // Creates & initializes the value to hold temporary values for comparisons & calculations.
+    NSUInteger pivotIndex = step;       // Creates & initializes (with step) the value to hold the current column's best pivot row-index.
     
     // Loops through all values in the column beneath the starting pivot index.
     for (NSUInteger rowIndex = step+1; rowIndex < _n; rowIndex++)
     {
         // Finds the absolute value of the next element in the column below the pivot element.
-        temporateColumnValue = fabs( [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:step] doubleValue] );
+        temporaryColumnValue = fabs( [[[_matrixA objectAtIndex:rowIndex] objectAtIndex:step] doubleValue] );
         
-        if (temporateColumnValue > largestAbsoluteValueForColumn)   // Checks if the temporary is larger than the largest. If so...
+        if (temporaryColumnValue > largestAbsoluteValueForColumn)   // Checks if the temporary is larger than the largest. If so...
         {
-            largestAbsoluteValueForColumn = temporateColumnValue;   // Update the largest value to be the temp. value.
+            largestAbsoluteValueForColumn = temporaryColumnValue;   // Update the largest value to be the temp. value.
             pivotIndex = rowIndex;                                  // Update the largest's row index to be that of the temp value.
         }
     }
@@ -267,28 +268,33 @@
  */
 -(void)ReduceRowsForStep:(NSUInteger)step
 {
-    double newValue; // To be used for temporary storage of newly calculate values.
+    double newValue = 0;            // The temporary storage of newly calculate values.
+    double currentRowElement = 0;   // The temporary storage of current row element values.
+    double pivotRowElement = 0;     // The temporary storage of pivot row element values.
     
     for (NSUInteger row = (step+1); row < _n; row ++)
     {
-        // Calculates the multiplier value.
-        double multiplier = [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue] / [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue];
+        currentRowElement = [[[_matrixA objectAtIndex:row]objectAtIndex:step]doubleValue];  // The current row's value beneath the pivot.
+        pivotRowElement   = [[[_matrixA objectAtIndex:step]objectAtIndex:step]doubleValue]; // The current step's value for the pivot element.
+        double multiplier = currentRowElement / pivotRowElement;                            // Calculates multiplier for row reduction.
         
-        // Fill in value directly below pivot with zero.
+        // Fill in value below pivot with zero for current row.
         [[_matrixA objectAtIndex:row] replaceObjectAtIndex:step withObject:[NSNumber numberWithDouble:0.0]];
         
         // Loops through the remaining elements in the row...
         for (NSUInteger col = (step+1); col < _n; col++)
         {
-            // Calculates new row-reduced value for current element.
-            newValue = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue] - multiplier * [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue];
+            double currentRowElement = [[[_matrixA objectAtIndex:row]objectAtIndex:col]doubleValue];  // The current row's element for current column
+            double pivotRowElement   = [[[_matrixA objectAtIndex:step]objectAtIndex:col]doubleValue]; // The pivot row's element for current column.
+            newValue = currentRowElement - multiplier * pivotRowElement;                              // Calculates new row-reduced value for current element.
             
             // Replaces the current element with the new value.
             [[_matrixA objectAtIndex:row]replaceObjectAtIndex:col withObject:[NSNumber numberWithDouble:newValue]];
         }
         
-        // Calculates the new row value of matrix B.
-        newValue = [[_matrixB objectAtIndex:row]doubleValue] - multiplier * [[_matrixB objectAtIndex:step]doubleValue];
+        currentRowElement = [[_matrixB objectAtIndex:row]doubleValue];  // The current row's b value.
+        pivotRowElement   = [[_matrixB objectAtIndex:step]doubleValue]; // The pivot row's b value.
+        newValue = currentRowElement - multiplier * pivotRowElement;    // Calculates new b value for current row.
         
         // Replaces the current element with the new value.
         [_matrixB replaceObjectAtIndex:row withObject:[NSNumber numberWithDouble:newValue]];
@@ -302,7 +308,8 @@
 -(void)BackSubstitution
 {
     // SAFETY: If the diagonal term for this row is considered "zero"
-    if ( [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue] < _LS_ZERO_THRESHOLD )
+    double nXnTerm = fabs( [[[_matrixA objectAtIndex:(_n-1)]objectAtIndex:(_n-1)]doubleValue] );
+    if ( nXnTerm < _LS_ZERO_THRESHOLD)
     {
         // Display error message to terminal and terminate the program.
         NSLog(@"ERROR: Attempted to divide by zero during back substitution on the initial back-step"); exit(0);
@@ -327,7 +334,9 @@
         }
         
         // SAFETY: If the diagonal term for this row is considered "zero"
-        if ( [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:rowIndex]doubleValue] < _LS_ZERO_THRESHOLD )
+        double nXnTerm = fabs( [[[_matrixA objectAtIndex:rowIndex]objectAtIndex:rowIndex]doubleValue] );
+
+        if ( nXnTerm < _LS_ZERO_THRESHOLD )
         {
             // Display error message to terminal and terminate the program.
             NSLog(@"ERROR: Attempted to divide by zero during back substitution on the %lith step!",(long)rowIndex+1); exit(0);
